@@ -1,0 +1,8 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/asteroids/asteroid_large"
+	"$bumpmap" "models/asteroids/asteroid_large_bump"
+	"$normalmap" "models/asteroids/asteroid_large_bump"
+	"$surfaceprop" "Boulder"
+	"%keywords" "model; asteroid"
+}
