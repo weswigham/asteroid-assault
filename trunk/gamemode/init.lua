@@ -73,6 +73,8 @@ function GM:PlayerSpawn( pl )
 	GAMEMODE:SetPlayerSpeed( pl, 250, 500 )
 	pl:SetMaxHealth(100)
 	pl.AliveCounter = 0
+	pl.TempGodmode = true
+	pl.TempGodmodeRemaining = 3
 	
 end
 
@@ -91,6 +93,7 @@ function GM:PlayerLoadout( pl )
 	
 	if self.Build == true then
 		pl:Give( "weapon_physgun" )
+		pl:Give( "tool_pistol" )
 	elseif self.Armeggadon == true then
 		pl:Give( "weapon_smg1" )
 		pl:GiveAmmo(400,"SMG1")
@@ -107,7 +110,10 @@ end
 function GM:PlayerShouldTakeDamage( ply, attacker )
 	if ( attacker:IsValid() and attacker:IsPlayer() ) then
 		return false
-	else return true
+	elseif ply.TempGodmode then
+		return !ply.TempGodmode
+	else 
+		return true 
 	end
 end
 
@@ -207,9 +213,11 @@ function GM:PlayerThink(ply)
 			timer.Simple(1, function() 
 				if ply and ply:IsValid() then 
 					ply.AliveCounter = ply.AliveCounter + 1
+					if ply.TempGodmodeRemaining > 0 then ply.TempGodmodeRemaining = ply.TempGodmodeRemaining - 1 end
+					if ply.TempGodmodeRemaining <= 0 then ply.TempGodmode = false end
 					ply.NextSecond = true 
 				end 
-			end) --Why is the delay fo a simple timer now in what seems to be miliseconds?
+			end)
 		end
 		
 		if ply.AliveCounter and ply.AliveCounter > ply:Frags() then
@@ -282,6 +290,7 @@ function GM:StartBuild()
 	for k,v in pairs(ents.FindByClass("asteroid")) do
 		v:Remove()
 	end
+	
 end
 
 function GM:StartArmeggadon()
@@ -289,6 +298,12 @@ function GM:StartArmeggadon()
 	self.Build = false
 	self.Armeggadon = true
 	self:RespawnEveryone()
+	
+	for k,v in pairs(ents.FindByClass("prop_physics")) do
+		v:SetCollisionGroup( COLLISION_GROUP_WORLD )
+		v.CollisionGroup = COLLISION_GROUP_WORLD
+		v:EnableMovement(false)
+	end
 end
 
 function GM:RespawnEveryone()
@@ -306,16 +321,20 @@ end
 
 function BuySomething(ply,cmd,args)
 	if ply and ply:IsValid() then
+		local args = string.Explode(" ",args[1])
 		local name = args[1]
-		local pos = ply:GetPos()+ply:GetAngles():Forward()*10+Vector(0,0,40)
 		if ItemExists(name) then
+			local nicename = Items[name].NiceName or Items[name].Name
 			if ply:GetNWInt("money") >= Items[name].Cost then
-				ply:SetNWInt("money", ply:GetNWInt("money") - Items[name].Cost)
 				if Items[name].Category == "weapon" then
+					ply:SetNWInt("money", ply:GetNWInt("money") - Items[name].Cost)
 					ply:Give(Items[name].Class)
 					ply:GiveAmmo(Items[name].Ammo,Items[name].AmmoType)
-					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..name.." you now have $"..ply:GetNWInt("money") )
+					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
 				else
+					local pos = Vector(args[2],args[3],args[4])
+					if pos and pos:Distance(ply:GetPos()) <= 2600 then
+					ply:SetNWInt("money", ply:GetNWInt("money") - Items[name].Cost)
 					local ent = ents.Create(Items[name].Class)
 					ent:SetPos(pos)
 					ent:SetModel(Items[name].Model)
@@ -325,10 +344,10 @@ function BuySomething(ply,cmd,args)
 						end
 					end
 					ent:Spawn()
-					ent:DropToFloor()
 					ent.owner = ply
 					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetMass(),50,1000))
-					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..name.." you now have $"..ply:GetNWInt("money") )
+					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
+					end
 				end
 			end
 		end
