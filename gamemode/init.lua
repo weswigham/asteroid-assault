@@ -18,7 +18,11 @@ resource.AddFile("models/asteroids/asteroid1.mdl")
 resource.AddFile("models/asteroids/asteroid2.mdl")
 resource.AddFile("materials/models/asteroids/asteroid_large.vmt")
 resource.AddFile("materials/models/asteroids/asteroid_large.vtf")
-resource.AddFile("materials/models/asteroids/asteroid_large_bump.vmt")
+resource.AddFile("materials/models/asteroids/asteroid_large_bump.vtf")
+resource.AddFile("materials/fire/tileable_fire.vmt")
+resource.AddFile("materials/fire/tileable_fire.vtf")
+resource.AddFile("materials/fire/tileable_fire_bump.vtf")
+resource.AddFile("materials/fire/tileable_fire_selfillum.vtf")
 
 function GM:Initialize()
 	self.GravityConstant = (6.67428 + math.random(-0.00067,0.00067)) * 10^-11
@@ -47,6 +51,12 @@ function GM:DoPlayerDeath( ply, attacker, dmginfo )
 
 	ply:SetNWInt("money", math.Clamp(ply:GetNWInt("money")-200,0,ply:GetNWInt("money")))--there's a toll for respawning. xD
 end 
+
+function GM:PhysgunPickup(ply, ent)
+	if ent:GetClass() == "func_breakable" then return false end
+	if ent.owner and ent.owner:EntIndex() != ply:EntIndex() then return false end
+	return true
+end
 
 function GM:PlayerNoClip( pl ) 
 	if self.Armeggadon == true then
