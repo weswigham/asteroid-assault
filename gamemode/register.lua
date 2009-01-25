@@ -1,0 +1,1 @@
+RegisterGamemode("Asteroid Assault","AsteroidAssault",{"aa_","gm_"})

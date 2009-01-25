@@ -1,0 +1,16 @@
+"Gamemode"
+{
+	"name"		"Asteroid Assault"
+	"version"	".01a"
+
+	"author_name"	"Levybreak"
+	"author_email"	""
+	"author_url"	""
+	
+	"info"		"Asteroid Assault- Defend yourself, and your base!"
+	"hide"		"0"
+	"mappattern"
+	{
+		"1"	"^aa_"
+	}
+}
