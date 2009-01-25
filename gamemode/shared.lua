@@ -47,7 +47,8 @@ end
 function AddPropToList(model,cost,name)
 	local ITEM = {}
 
-	ITEM.Name = name
+	ITEM.Name = string.gsub(name," ","-")
+	ITEM.NiceName = name
 	ITEM.Desc = "Prop"
 	ITEM.Class = "prop_physics"
 	ITEM.Cost = cost
@@ -62,7 +63,7 @@ Test Items
 ---------------------------------------------------------
 local ITEM = {}
 
-ITEM.Name = "Center Of Gravity"
+ITEM.Name = "CenterOfGravity"
 ITEM.Desc = "Center Of Gravity"
 ITEM.Class = "center_of_gravity"
 ITEM.Cost = 0

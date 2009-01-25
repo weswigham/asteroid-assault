@@ -149,7 +149,7 @@ PropertySheet:SetSize(360, 365)
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
 					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name) 
+						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -181,7 +181,7 @@ PropertySheet:SetSize(360, 365)
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
 					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name) 
+						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -219,7 +219,7 @@ local SheetItemTwo = vgui.Create( "DPanelList" )
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
         			if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name) 
+						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -257,7 +257,7 @@ local SheetItemThree = vgui.Create( "DPanelList" )
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
 					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name) 
+						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -289,7 +289,7 @@ local SheetItemThree = vgui.Create( "DPanelList" )
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
 					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name) 
+						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -330,7 +330,7 @@ local SheetItemThree = vgui.Create( "DPanelList" )
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
 					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name) 
+						RunConsoleCommand("BuySomeShit", v.Name.." "..GetPosForSpawning()) 
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -416,3 +416,12 @@ end
 
 hook.Add("OnSpawnMenuOpen","UponOpeningTehMenuz",OpenTheBuyWindowFromSpawnKey)
 hook.Add("OnContextMenuOpen","UponOpeningTehContextMenuz",OpenTheBuyWindowFromContextKey)
+
+function GetPosForSpawning()
+	local trace = LocalPlayer():GetEyeTrace()
+	if trace.HitPos:Distance(LocalPlayer():GetPos()) <= 2510 then
+		return tostring(trace.HitPos)
+	else
+		return LocalPlayer():GetPos()
+	end
+end
