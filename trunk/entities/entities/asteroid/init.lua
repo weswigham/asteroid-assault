@@ -22,7 +22,7 @@ function ENT:Initialize()
 	self.DoesNotHaveTargetYet = true
 	
 	if GAMEMODE.MaxAsteroids:GetInt() <= 50 then --trail doubles entity count. :P
-		self.trail = util.SpriteTrail(self, 0, Color(255,50,50,200), false, 100, 80, 1, 1/(100+80)*0.5, "trails/plasma.vmt") 
+		self.trail = util.SpriteTrail(self, 0, Color(255,50,50,200), true, 100, 10, 2, 1/(100+10)*0.5, "fire/tileable_fire.vmt") 
 	end
 	
 end
