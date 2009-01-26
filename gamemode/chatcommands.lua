@@ -97,15 +97,48 @@ end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)
 
 /*---------------------------------------------------------
- SkipBuild
+ Skipcurrentphase
 ---------------------------------------------------------*/
 local CHATCMD = {}
 
 CHATCMD.Command = "!skip"
-CHATCMD.Desc = "- skips build minutes"
+CHATCMD.Desc = "- skips this phase"
 function CHATCMD:Run( ply, ... )
 	if ply:IsAdmin() then
-		SetGlobalInt("buildmode",1)
+		if GetGlobalInt("buildmode") > 1 then
+			SetGlobalInt("buildmode",1)
+		elseif GetGlobalInt("armeggadon") > 1 then
+			SetGlobalInt("armeggadon",1)
+		end
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+ Give Perk
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!perkme"
+CHATCMD.Desc = "- skips this phase"
+function CHATCMD:Run( ply, ... )
+	if ply:IsAdmin() then
+		local perk = table.concat(arg, " ")
+		GivePerk(ply,perk)
+	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+ Give Exp
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!plusexp"
+CHATCMD.Desc = "- skips this phase"
+function CHATCMD:Run( ply, ... )
+	if ply:IsAdmin() then
+		ply:SetNWInt("exp", ply:GetNWInt("exp")+arg[1])
 	end
 end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)

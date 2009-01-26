@@ -20,9 +20,10 @@ function ENT:Initialize()
 	self:GetPhysicsObject():EnableGravity(false)
 	
 	self.DoesNotHaveTargetYet = true
+	self.FirstPush = true
 	
 	if GAMEMODE.MaxAsteroids:GetInt() <= 50 then --trail doubles entity count. :P
-		self.trail = util.SpriteTrail(self, 0, Color(255,50,50,200), true, 100, 10, 2, 1/(100+10)*0.5, "fire/tileable_fire.vmt") 
+		self.trail = util.SpriteTrail(self, 0, Color(255,50,50,200), true, 60, 10, 1.5, 1/(60+10)*0.5, "fire/tileable_fire.vmt") 
 	end
 	
 end
@@ -54,7 +55,12 @@ function ENT:Think()
 		local gforce = (GAMEMODE.GravityConstant*GAMEMODE.MassOfEarth*self:GetPhysicsObject():GetMass())/(self.Target:Distance(self:GetPos())^2)
 		local vect = (self.Target-self:GetPos()):Normalize()
 		if self.Target:Distance(self:GetPos()) < 120 then self.DoesNotHaveTargetYet = true end
-		self:GetPhysicsObject():ApplyForceCenter((vect*gforce)+(Vector(math.Rand(-200,200),math.Rand(-200,200),math.Rand(-200,200))))
+		if self.FirstPush == true then --let's get this bastud headin in the right direction, then!
+			self:GetPhysicsObject():SetVelocity(vect*gforce)
+			self.FirstPush = false
+		else
+			self:GetPhysicsObject():ApplyForceCenter((vect*gforce)+(Vector(math.Rand(-200,200),math.Rand(-200,200),math.Rand(-200,200))))
+		end
 	end
 end
 
