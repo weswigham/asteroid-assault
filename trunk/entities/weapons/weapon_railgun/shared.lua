@@ -1,8 +1,8 @@
 
 SWEP.Author			= "Levybreak"
 SWEP.Contact		= "Facepunch"
-SWEP.Purpose		= "Remove your own props"
-SWEP.Instructions	= "Shoot a prop to remove it.\nRight click to nocollide/unnocollide (with all) it."
+SWEP.Purpose		= "Yea, muthafucka! Railgunz ig gunna burn a hola through ya!"
+SWEP.Instructions	= "Shoot to destroy."
 
 SWEP.Spawnable			= true
 SWEP.AdminSpawnable		= true
@@ -10,17 +10,15 @@ SWEP.AdminSpawnable		= true
 SWEP.ViewModel			= "models/weapons/v_pistol.mdl"
 SWEP.WorldModel			= "models/weapons/w_pistol.mdl"
 
-SWEP.Primary.ClipSize		= -1
-SWEP.Primary.DefaultClip	= -1
+SWEP.Primary.ClipSize		= 6
+SWEP.Primary.DefaultClip	= 3
 SWEP.Primary.Automatic		= false
-SWEP.Primary.Ammo			= "none"
+SWEP.Primary.Ammo			= "EnergyCells"
 
-SWEP.Secondary.ClipSize		= -1
-SWEP.Secondary.DefaultClip	= -1
+SWEP.Secondary.ClipSize		= 1
+SWEP.Secondary.DefaultClip	= 0
 SWEP.Secondary.Automatic	= false
-SWEP.Secondary.Ammo			= "none"
-
-local ShootSound = Sound( "Metal.SawbladeStick" )
+SWEP.Secondary.Ammo			= "ChargedCapacitor"
 
 /*---------------------------------------------------------
 	Reload does nothing
@@ -32,7 +30,8 @@ end
 /*---------------------------------------------------------
    Think does nothing
 ---------------------------------------------------------*/
-function SWEP:Think()	
+function SWEP:Think()
+
 end
 
 
@@ -48,7 +47,6 @@ function SWEP:PrimaryAttack()
 	
 	if (!SERVER) then return end
 	
-	tr.Entity:Remove()
 
 end
 
@@ -63,19 +61,7 @@ function SWEP:SecondaryAttack()
 	self:ShootEffects( self )
 	
 	if (!SERVER) then return end
-	
-	if ( tr.Entity.CollisionGroup == COLLISION_GROUP_WORLD ) then
-	
-		tr.Entity:SetColor(255,255,255,255)
-		tr.Entity:SetCollisionGroup( COLLISION_GROUP_NONE )
-		tr.Entity.CollisionGroup = COLLISION_GROUP_NONE
-	
-	else
-		tr.Entity:SetColor(255,255,255,100)
-		tr.Entity:SetCollisionGroup( COLLISION_GROUP_WORLD )
-		tr.Entity.CollisionGroup = COLLISION_GROUP_WORLD
-		
-	end
+
 	
 end
 
@@ -85,5 +71,5 @@ end
    Desc: Should this weapon be dropped when its owner dies?
 ---------------------------------------------------------*/
 function SWEP:ShouldDropOnDie()
-	return false
+	return true
 end

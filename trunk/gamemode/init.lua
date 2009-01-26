@@ -5,15 +5,19 @@ By Levybreak
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
+AddCSLuaFile( "perks.lua" )
+AddCSLuaFile( "player_extensions.lua" )
 
 include( 'shared.lua' )
 include( 'chatcommands.lua' )
 include( 'sg_compatability.lua' )
+include( 'player_extensions.lua' )
+include( 'perks.lua' )
 
 GM.VolCheckIterations = CreateConVar( "AA_VolumeCheckIterations", "11",{ FCVAR_CHEAT, FCVAR_ARCHIVE } ) --Seriously, no need to skrew with it.
 GM.MaxAsteroids = CreateConVar( "AA_MaxAsteroids", "20",{ FCVAR_ARCHIVE } ) --Don't set this to over 50 or so on large maps... you may crash for having too many entities. (I was crashing around 75, you can double the ammount by disabling trails, though (now done automatically))
 
-resource.AddFile("resource/fonts/armalite.ttf")
+resource.AddFile("resource/fonts/arvigo.ttf")
 resource.AddFile("models/asteroids/asteroid1.mdl")
 resource.AddFile("models/asteroids/asteroid2.mdl")
 resource.AddFile("materials/models/asteroids/asteroid_large.vmt")
@@ -49,7 +53,9 @@ function GM:DoPlayerDeath( ply, attacker, dmginfo )
 	ply.PreviousTotal = ply.PreviousTotal + ply.AliveCounter
 	ply.AliveCounter = 0
 
+	if (ply.NoCountDeath != true and self.Build != true) then
 	ply:SetNWInt("money", math.Clamp(ply:GetNWInt("money")-200,0,ply:GetNWInt("money")))--there's a toll for respawning. xD
+	end
 end 
 
 function GM:PhysgunPickup(ply, ent)
@@ -69,9 +75,8 @@ function GM:PlayerSpawn( pl )
 
 	self.BaseClass.PlayerSpawn( self, pl )
 	
-	// Set the player's speed
-	GAMEMODE:SetPlayerSpeed( pl, 250, 500 )
-	pl:SetMaxHealth(100)
+	pl:SetMaxHealth(pl.MaxHP or 100)
+	pl:SetHealth(pl:GetMaxHealth())
 	pl.AliveCounter = 0
 	pl.TempGodmode = true
 	pl.TempGodmodeRemaining = 3
@@ -96,8 +101,8 @@ function GM:PlayerLoadout( pl )
 		pl:Give( "tool_pistol" )
 	elseif self.Armeggadon == true then
 		pl:Give( "weapon_smg1" )
-		pl:GiveAmmo(400,"SMG1")
-		pl:GiveAmmo(4,"SMG1_Grenade")
+		pl:GiveAmmo(280+(pl.PrimaryAmmoAdd*45),"SMG1")
+		pl:GiveAmmo(3+(pl.SecondaryAmmoAdd),"SMG1_Grenade")
 	end
 
 	local cl_defaultweapon = pl:GetInfo( "cl_defaultweapon" )
@@ -126,8 +131,16 @@ function GM:PlayerInitialSpawn( ply )
 	
 	ply.NextSecond = true
 	ply.PreviousTotal = 0
-	ply:SetNetworkedInt("money", 500)
+	ply.NextLevel = 1
+	ply.SecondaryAmmoAdd = 0
+	ply.PrimaryAmmoAdd = 0
+	ply.Perks = {}
+	ply:SetNetworkedInt("money", 1000)
 	ply:SetNetworkedInt("exp", ply.PreviousTotal)
+	
+	GAMEMODE:SetPlayerSpeed( ply, 220, 440 )
+	ply:SetMaxHealth(100)
+	
 	self:Load(ply)
 	
 end
@@ -141,6 +154,7 @@ function GM:Save(ply)
 	tbl["name"] = ply:Nick()
 	tbl["exp"] = ply:GetNWInt("exp")
 	tbl["best"] = ply:Frags() --Just for show. Won't be loaded to anywhere.
+	if ply.Perks then tbl["perks"] = ply.Perks end
 	local save = util.TableToKeyValues(tbl)
 	file.Write("AASaves/"..string.gsub(ply:SteamID(),":","-")..".txt",save)
 end
@@ -151,7 +165,29 @@ function GM:Load(ply)
 	local tbl = util.KeyValuesToTable(save)
 	ply.PreviousTotal = tbl["exp"]
 	ply:SetNetworkedInt("exp", ply.PreviousTotal)
+	ply.NextLevel = math.floor(ply.PreviousTotal/600)+1
+	if tbl.perks then 
+		for k,v in pairs(tbl.perks) do
+			GivePerk(ply,v)
+		end
+	end
+	ply.HasLoaded = true
 end
+
+function GivePerkClient(ply,perk)
+	if ply and ply:IsValid() then
+		umsg.Start("RecievePerks",ply)
+		umsg.String(perk)
+		umsg.End()
+	end
+end
+
+function GimmieThisPerk(ply,cmd,args)
+	if args[1] and PerkExists(args[1]) and not HasPerk(ply,args[1]) and math.floor(ply:GetNWInt("exp")/600) >= Perks[args[1]].Level and #ply.Perks <= math.floor(ply:GetNWInt("exp")/600) then
+		GivePerk(ply,args[1])
+	end
+end
+concommand.Add("IdLikeToBuyAVowelIMeanPerk",GimmieThisPerk)
 
 function GM:Think()
 	if not NextSecond or NextSecond == true then
@@ -213,6 +249,7 @@ function GM:PlayerThink(ply)
 			timer.Simple(1, function() 
 				if ply and ply:IsValid() then 
 					ply.AliveCounter = ply.AliveCounter + 1
+					ply:SetNetworkedInt("exp", ply:GetNWInt("exp")+1)
 					if ply.TempGodmodeRemaining > 0 then ply.TempGodmodeRemaining = ply.TempGodmodeRemaining - 1 end
 					if ply.TempGodmodeRemaining <= 0 then ply.TempGodmode = false end
 					ply.NextSecond = true 
@@ -229,9 +266,13 @@ function GM:PlayerThink(ply)
 			ply:PrintMessage( HUD_PRINTTALK, "Your experience has been saved.")
 		end
 		
-	end 
-	ply:SetNetworkedInt("exp", ply.PreviousTotal + ply.AliveCounter)
+	end
 	if not self.LowestPlayerZ or ply:GetPos().z < self.LowestPlayerZ then self.LowestPlayerZ = ply:GetPos().z end
+	if ply:GetNWInt("exp")/600 > ply.NextLevel then
+		umsg.Start("ChoseNewPerk",ply)
+		umsg.End()
+		ply.NextLevel = ply.NextLevel + 1
+	end
 end
 
 function GM:SpawnAnAsteroid()
@@ -291,6 +332,11 @@ function GM:StartBuild()
 		v:Remove()
 	end
 	
+	for k,v in pairs(ents.FindByClass("prop_physics")) do
+		v:SetUnFreezable(true)
+	end
+	RunConsoleCommand("stopsounds")
+	
 end
 
 function GM:StartArmeggadon()
@@ -298,11 +344,15 @@ function GM:StartArmeggadon()
 	self.Build = false
 	self.Armeggadon = true
 	self:RespawnEveryone()
+	WorldSound("canals_citadel_siren",Vector(0,0,0))
+	WorldSound("streetwar.distant_siren_distant_loop",Vector(0,0,0))
 	
 	for k,v in pairs(ents.FindByClass("prop_physics")) do
-		v:SetCollisionGroup( COLLISION_GROUP_WORLD )
-		v.CollisionGroup = COLLISION_GROUP_WORLD
-		v:EnableMovement(false)
+		v:SetCollisionGroup( COLLISION_GROUP_NONE )
+		v.CollisionGroup = COLLISION_GROUP_NONE
+		v:SetUnFreezable(false)
+		v:GetPhysicsObject():EnableMotion(false)
+		v:SetColor(255,255,255,255)
 	end
 end
 
@@ -319,24 +369,28 @@ function GM:GiveMoney(ply,money)
 	ply:SetNWInt("money", ply:GetNWInt("money")+money)
 end
 
+function GM:TakeMoney(ply,money)
+	ply:SetNWInt("money", math.Clamp(ply:GetNWInt("money")-money,0,ply:GetNWInt("money")))
+end
+
 function BuySomething(ply,cmd,args)
 	if ply and ply:IsValid() then
 		local args = string.Explode(" ",args[1])
 		local name = args[1]
 		if ItemExists(name) then
 			local nicename = Items[name].NiceName or Items[name].Name
-			if ply:GetNWInt("money") >= Items[name].Cost then
+			if ply:GetNWInt("money") >= (Items[name].Cost*((100-ply:GetDiscount())/100)) then
 				if Items[name].Category == "weapon" then
-					ply:SetNWInt("money", ply:GetNWInt("money") - Items[name].Cost)
+					ply:SetNWInt("money", ply:GetNWInt("money") - (Items[name].Cost*((100-ply:GetDiscount())/100)))
 					ply:Give(Items[name].Class)
 					ply:GiveAmmo(Items[name].Ammo,Items[name].AmmoType)
 					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
 				else
 					local pos = Vector(args[2],args[3],args[4])
 					if pos and pos:Distance(ply:GetPos()) <= 2600 then
-					ply:SetNWInt("money", ply:GetNWInt("money") - Items[name].Cost)
+					ply:SetNWInt("money", ply:GetNWInt("money") - (Items[name].Cost*((100-ply:GetDiscount())/100)))
 					local ent = ents.Create(Items[name].Class)
-					ent:SetPos(pos)
+					ent:SetPos(pos+Vector(0,0,20))
 					ent:SetModel(Items[name].Model)
 					if Items[name].KeyValues then
 						for k,v in pairs(Items[name].KeyValues) do
@@ -345,7 +399,7 @@ function BuySomething(ply,cmd,args)
 					end
 					ent:Spawn()
 					ent.owner = ply
-					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetMass(),50,1000))
+					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetVolume(),50,1000))
 					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
 					end
 				end
@@ -402,7 +456,6 @@ function GM:FindVolume(name, radius)
 			if (util.IsInWorld( pos ) == true) then
 				found = 1
 				for k, v in pairs(volumes) do
-					--if v and v.pos and (v.pos == pos or v.pos:Distance(pos) < v.radius) then -- Hur hur. This is why i had planetary collisions.
 					if v and v.pos and (v.pos == pos or v.pos:Distance(pos) < v.radius+radius) then
 						found = 0
 					end
@@ -446,7 +499,7 @@ function GM:FindVolume(name, radius)
 			end
 		end
 	end
-	--if self.LowestPlayerZ and volumes[name].pos.z and volumes[name].pos.z <= self.LowestPlayerZ then volumes[name].pos.z = self.LowestPlayerZ + 200 end -- to make allll asteroids come from above!
+	if self.LowestPlayerZ and volumes[name] and volumes[name].pos and volumes[name].pos.z and volumes[name].pos.z <= self.LowestPlayerZ then volumes[name].pos.z = self.LowestPlayerZ + 200 end -- to make allll asteroids come from above!
 	return volumes[name]
 end
 

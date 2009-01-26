@@ -34,6 +34,26 @@ function ItemExists(item)
 	end
 end
 
+function RetrieveAllSubCategorys(cata)
+	local tbl = {}
+	for k,v in pairs(RetrieveAllItemsInCategory(cata)) do
+		if not table.HasValue(tbl,v.Subcategory) then
+			table.insert(tbl,v.Subcategory)
+		end
+	end
+	return tbl
+end
+
+function RetrieveAllItemsInSubCategory(cata,sub)
+	local tbl = {}
+	for k,v in pairs(RetrieveAllItemsInCategory(cata)) do
+		if v.Subcategory == sub then
+			table.insert(tbl,v)
+		end
+	end
+	return tbl
+end
+
 function RetrieveAllItemsInCategory(cata)
 	local tbl = {}
 	for k,v in pairs(Items) do
@@ -60,7 +80,7 @@ end
 
 /*---------------------------------------------------------
 Test Items
----------------------------------------------------------
+---------------------------------------------------------*/
 local ITEM = {}
 
 ITEM.Name = "CenterOfGravity"
@@ -87,7 +107,7 @@ ITEM.Warning = "This Item will be detonated IMMEDIATLY after spawning!"
 ITEM.Model = "models/Roller.mdl"
 ITEM.KeyValues = {Test="Meh",
 				Test2="Un-Meh"}
-RegisterItem(ITEM.Name,ITEM)*/
+RegisterItem(ITEM.Name,ITEM)
 
 --
 --Weapons
@@ -100,7 +120,7 @@ ITEM.Desc = "Sub Machine Gun"
 ITEM.Class = "weapon_smg1"
 ITEM.Cost = 50
 ITEM.Category = "weapon"
-ITEM.Subcategory = "smg"
+ITEM.Subcategory = "SMGs"
 ITEM.Ammo = 50
 ITEM.AmmoType = "SMG1"
 ITEM.Model = "models/Weapons/w_smg1.mdl"
@@ -113,7 +133,7 @@ ITEM.Desc = "Rocket Propelled Grenade"
 ITEM.Class = "weapon_rpg"
 ITEM.Cost = 250
 ITEM.Category = "weapon"
-ITEM.Subcategory = "other"
+ITEM.Subcategory = "Other"
 ITEM.Ammo = 3
 ITEM.AmmoType = "RPG_Round"
 ITEM.Model = "models/Weapons/w_rocket_launcher.mdl"
@@ -126,7 +146,7 @@ ITEM.Desc = "Uses Buckshot"
 ITEM.Class = "weapon_shotgun"
 ITEM.Cost = 100
 ITEM.Category = "weapon"
-ITEM.Subcategory = "other"
+ITEM.Subcategory = "Other"
 ITEM.Ammo = 32
 ITEM.AmmoType = "Buckshot"
 ITEM.Model = "models/Weapons/w_shotgun.mdl"
@@ -139,7 +159,7 @@ ITEM.Desc = "Assault Rifle 2 (Pulse Rifle)"
 ITEM.Class = "weapon_ar2"
 ITEM.Cost = 140
 ITEM.Category = "weapon"
-ITEM.Subcategory = "smg"
+ITEM.Subcategory = "SMGs"
 ITEM.Ammo = 80
 ITEM.AmmoType = "AR2"
 ITEM.Model = "models/Weapons/w_IRifle.mdl"

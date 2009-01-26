@@ -4,6 +4,8 @@ By Levybreak
 ---------------------------------------------------------*/
 
 include( 'shared.lua' )
+include( 'perks.lua' )
+include( 'player_extensions.lua' )
 
 function GM:Initialize()
 
@@ -103,7 +105,85 @@ function GM:HUDPaint()
 	
 end
 
-function BuyItemsMenu(activetab)
+--------------
+--Perk Stuff--
+--------------
+
+local function RecievePerkz(um) --Hurhur. local to prevent abuse by smart playaz
+	local perk = um:ReadString()
+	GivePerk(LocalPlayer(),perk)
+	LocalPlayer():PrintMessage( HUD_PRINTTALK,"You have recieved the perk "..perk.."!")
+end
+usermessage.Hook("RecievePerks",RecievePerkz)
+
+local function MakeGetNewPerkWindow(um) 
+	local DermaPanel = vgui.Create( "DFrame" )
+	DermaPanel:SetPos( (ScrW()/2)-185,(ScrH()/2)-200 )
+	DermaPanel:SetSize( 370, 400 )
+	DermaPanel:SetTitle( "Chose a new perk!" )
+	DermaPanel:SetVisible( true ) 
+	DermaPanel:SetDraggable( true )
+	DermaPanel:ShowCloseButton( false )
+	DermaPanel:MakePopup()
+	
+	local SheetDPanel = vgui.Create( "DPanelList", DermaPanel)
+	SheetDPanel:SetPos(5,30)
+	SheetDPanel:SetSize(360,360)
+	SheetDPanel:SetSpacing( 5 )
+	SheetDPanel:EnableHorizontal( false )
+	SheetDPanel:EnableVerticalScrollbar( true )
+	
+	for k,v in pairs(GetAllTypesOfPerks()) do
+	
+	local SheetItemOne = vgui.Create("DCollapsibleCategory") 
+	SheetItemOne:SetSize( 350,350 )
+	SheetItemOne:SetExpanded( 0 )
+	SheetItemOne:SetLabel( v ) 
+	SheetDPanel:AddItem( SheetItemOne ) 
+	
+	
+	local CategoryList = vgui.Create( "DPanelList" ) 
+	CategoryList:SetAutoSize(true)
+	CategoryList:SetSpacing( 5 ) 
+	CategoryList:EnableHorizontal( false ) 
+	CategoryList:EnableVerticalScrollbar( true ) 
+	SheetItemOne:SetContents( CategoryList )
+	
+	for kz,vz in pairs(GetAllPerksOfType(v)) do
+		if vz.Level <= math.floor(LocalPlayer():GetNWInt("exp")/600) then
+		local CategoryContentOne = vgui.Create( "DPanel" ) 
+		CategoryContentOne:SetSize(340,75)
+		
+		local DaButton = vgui.Create( "DButton", CategoryContentOne)
+		DaButton:SetPos(4,4)
+		DaButton:SetSize(67,67)
+		DaButton:SetText(vz.Name)
+		DaButton.DoClick = function()
+			RunConsoleCommand("IdLikeToBuyAVowelIMeanPerk",vz.Name)
+			DermaPanel:Close()
+		end
+		if HasPerk(LocalPlayer(),vz.Name) or not (math.floor(LocalPlayer():GetNWInt("exp")/600) >= Perks[vz.Name].Level) then
+			DaButton:SetDisabled(true)
+		end
+		
+		local Decr = vgui.Create( "DLabel", CategoryContentOne)
+		Decr:SetPos(80,4)
+		Decr:SetText(vz.Desc.."\nLevel: "..vz.Level)
+		Decr:SetSize(240,67)
+		
+		CategoryList:AddItem( CategoryContentOne ) 
+		end
+	end
+	end
+	if HasAllPerks(LocalPlayer()) == true then DermaPanel:Close() end
+end
+usermessage.Hook("ChoseNewPerk",MakeGetNewPerkWindow)
+
+------------------
+--End Perk Stuff--
+------------------
+
+function BuyItemsMenu(activetab) --Automatically adds new subcategories now. :D
 
 local DermaPanel = vgui.Create( "DFrame" )
 DermaPanel:SetPos( (ScrW()/2)-185,(ScrH()/2)-200 )
@@ -126,42 +206,11 @@ PropertySheet:SetSize(360, 365)
 	SheetDPanel:EnableHorizontal( true ) 
 	SheetDPanel:EnableVerticalScrollbar( true ) 
 
-		local SheetItemOne = vgui.Create("DCollapsibleCategory") 
-		SheetItemOne:SetSize( 350, 75 )
-		SheetItemOne:SetExpanded( 0 )
-		SheetItemOne:SetLabel( "Gravity-Type" ) 
-	SheetDPanel:AddItem( SheetItemOne ) 
-  
-			local CategoryList = vgui.Create( "DPanelList" ) 
-			CategoryList:SetAutoSize(true)
-			CategoryList:SetSpacing( 5 ) 
-			CategoryList:EnableHorizontal( true ) 
-			CategoryList:EnableVerticalScrollbar( true ) 
-  
-		SheetItemOne:SetContents( CategoryList )
-  
-			for k,v in pairs(RetrieveAllItemsInCategory("bomb")) do
-				if v.Subcategory == "gravity" then
-				local CategoryContentOne = vgui.Create( "DModelPanel" ) 
-				CategoryContentOne:SetModel( v.Model ) 
-				CategoryContentOne:SetFOV(40)
-				CategoryContentOne:SetSize(75,75)
-				CategoryContentOne:SetLookAt(Vector(0,0,0))
-    			CategoryContentOne.DoClick = function()
-					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
-					else
-						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
-					end
-    			end 
-				CategoryList:AddItem( CategoryContentOne ) 
-				end
-			end
-			
+	for kz,vz in pairs(RetrieveAllSubCategorys("bomb")) do
 	local ExplosiveType = vgui.Create("DCollapsibleCategory") 
 		ExplosiveType:SetSize( 350, 75 )
 		ExplosiveType:SetExpanded( 0 )
-		ExplosiveType:SetLabel( "Explosive-Type" ) 
+		ExplosiveType:SetLabel( vz ) 
 	SheetDPanel:AddItem( ExplosiveType ) 
 	
 		local CategoryList = vgui.Create( "DPanelList" ) 
@@ -172,23 +221,28 @@ PropertySheet:SetSize(360, 365)
   
 		ExplosiveType:SetContents( CategoryList )
 		
-			for k,v in pairs(RetrieveAllItemsInCategory("bomb")) do
-				if v.Subcategory == "explosive" then
+			for k,v in pairs(RetrieveAllItemsInSubCategory("bomb",vz)) do
 				local CategoryContentOne = vgui.Create( "DModelPanel" ) 
 				CategoryContentOne:SetModel( v.Model ) 
 				CategoryContentOne:SetFOV(40)
 				CategoryContentOne:SetSize(75,75)
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
-					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
+					if LocalPlayer():GetNWInt("money") >= (v.Cost*((100-LocalPlayer():GetDiscount())/100)) then
+						local pos = GetPosForSpawning()
+						if pos == nil then
+							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
+						else
+							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
     			end 
 				CategoryList:AddItem( CategoryContentOne ) 
-				end
 			end
+		end
+		
 
 local SheetItemTwo = vgui.Create( "DPanelList" )
 	SheetItemTwo:SetAutoSize(true)
@@ -196,10 +250,11 @@ local SheetItemTwo = vgui.Create( "DPanelList" )
 	SheetItemTwo:EnableHorizontal( true ) 
 	SheetItemTwo:EnableVerticalScrollbar( true ) 
 
+	for kz,vz in pairs(RetrieveAllSubCategorys("turret")) do
 		local SheetItemOne = vgui.Create("DCollapsibleCategory") 
 		SheetItemOne:SetSize( 350, 75 )
 		SheetItemOne:SetExpanded( 0 )
-		SheetItemOne:SetLabel( "Basic Bullets" ) 
+		SheetItemOne:SetLabel( vz ) 
 	SheetItemTwo:AddItem( SheetItemOne ) 
   
 			local CategoryList = vgui.Create( "DPanelList" ) 
@@ -210,23 +265,27 @@ local SheetItemTwo = vgui.Create( "DPanelList" )
   
 		SheetItemOne:SetContents( CategoryList )
   
-			for k,v in pairs(RetrieveAllItemsInCategory("turret")) do
-				if v.Subcategory == "basic" then
+			for k,v in pairs(RetrieveAllItemsInSubCategory("turret",vz)) do
 				local CategoryContentOne = vgui.Create( "DModelPanel" ) 
 				CategoryContentOne:SetModel( v.Model ) 
 				CategoryContentOne:SetFOV(40)
 				CategoryContentOne:SetSize(75,75)
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
-        			if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
+        			if LocalPlayer():GetNWInt("money") >= (v.Cost*((100-LocalPlayer():GetDiscount())/100)) then
+						local pos = GetPosForSpawning()
+						if pos == nil then
+							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
+						else
+							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
     			end 
-				CategoryList:AddItem( CategoryContentOne ) 
-				end
+				CategoryList:AddItem( CategoryContentOne )
 			end
+		end
 
 local SheetItemThree = vgui.Create( "DPanelList" )
 	SheetItemThree:SetAutoSize(true)
@@ -234,10 +293,11 @@ local SheetItemThree = vgui.Create( "DPanelList" )
 	SheetItemThree:EnableHorizontal( true ) 
 	SheetItemThree:EnableVerticalScrollbar( true ) 
 
+		for kz,vz in pairs(RetrieveAllSubCategorys("weapon"))	do
 		local SheetItemOne = vgui.Create("DCollapsibleCategory") 
 		SheetItemOne:SetSize( 350, 75 )
 		SheetItemOne:SetExpanded( 0 )
-		SheetItemOne:SetLabel( "SMGs" ) 
+		SheetItemOne:SetLabel( vz ) 
 	SheetItemThree:AddItem( SheetItemOne ) 
   
 			local CategoryList = vgui.Create( "DPanelList" ) 
@@ -248,55 +308,27 @@ local SheetItemThree = vgui.Create( "DPanelList" )
   
 		SheetItemOne:SetContents( CategoryList )
   
-			for k,v in pairs(RetrieveAllItemsInCategory("weapon")) do
-				if v.Subcategory == "smg" then
+			for k,v in pairs(RetrieveAllItemsInSubCategory("weapon",vz)) do
 				local CategoryContentOne = vgui.Create( "DModelPanel" ) 
 				CategoryContentOne:SetModel( v.Model ) 
 				CategoryContentOne:SetFOV(40)
 				CategoryContentOne:SetSize(75,75)
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
-					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
+					if LocalPlayer():GetNWInt("money") >= (v.Cost*((100-LocalPlayer():GetDiscount())/100)) then
+						local pos = GetPosForSpawning()
+						if pos == nil then
+							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
+						else
+							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
     			end 
 				CategoryList:AddItem( CategoryContentOne ) 
-				end
 			end
-			
-		local SheetItemOne = vgui.Create("DCollapsibleCategory") 
-		SheetItemOne:SetSize( 350, 75 )
-		SheetItemOne:SetExpanded( 0 )
-		SheetItemOne:SetLabel( "Other" ) 
-	SheetItemThree:AddItem( SheetItemOne ) 
-  
-			local CategoryList = vgui.Create( "DPanelList" ) 
-			CategoryList:SetAutoSize(true)
-			CategoryList:SetSpacing( 5 ) 
-			CategoryList:EnableHorizontal( true ) 
-			CategoryList:EnableVerticalScrollbar( true ) 
-  
-		SheetItemOne:SetContents( CategoryList )
-  
-			for k,v in pairs(RetrieveAllItemsInCategory("weapon")) do
-				if v.Subcategory == "other" then
-				local CategoryContentOne = vgui.Create( "DModelPanel" ) 
-				CategoryContentOne:SetModel( v.Model ) 
-				CategoryContentOne:SetFOV(40)
-				CategoryContentOne:SetSize(75,75)
-				CategoryContentOne:SetLookAt(Vector(0,0,0))
-    			CategoryContentOne.DoClick = function()
-					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name, GetPosForSpawning()) 
-					else
-						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
-					end
-    			end 
-				CategoryList:AddItem( CategoryContentOne ) 
-				end
-			end
+		end
 
 	local SheetItemFour = vgui.Create( "DPanelList" )
 	SheetItemFour:SetAutoSize(true)
@@ -306,7 +338,7 @@ local SheetItemThree = vgui.Create( "DPanelList" )
 
 		local SheetItemOne = vgui.Create("DCollapsibleCategory") 
 		SheetItemOne:SetSize( 350, 75 )
-		SheetItemOne:SetExpanded( 0 )
+		SheetItemOne:SetExpanded( 1 )
 		SheetItemOne:SetLabel( "Junk" ) 
 	SheetItemFour:AddItem( SheetItemOne ) 
   
@@ -322,21 +354,24 @@ local SheetItemThree = vgui.Create( "DPanelList" )
 		SheetItemOne:SetContents( CategoryList )
   
 			for k,v in pairs(RetrieveAllItemsInCategory("prop")) do
-				if v.Subcategory == "junk" then
 				local CategoryContentOne = vgui.Create( "DModelPanel" ) 
 				CategoryContentOne:SetModel( v.Model ) 
 				CategoryContentOne:SetFOV(80)
 				CategoryContentOne:SetSize(75,75)
 				CategoryContentOne:SetLookAt(Vector(0,0,0))
     			CategoryContentOne.DoClick = function()
-					if LocalPlayer():GetNWInt("money") >= v.Cost then
-						RunConsoleCommand("BuySomeShit", v.Name.." "..GetPosForSpawning()) 
+					if LocalPlayer():GetNWInt("money") >= (v.Cost*((100-LocalPlayer():GetDiscount())/100)) then
+						local pos = GetPosForSpawning()
+						if pos == nil then
+							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
+						else
+							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
     			end 
 				CategoryList:AddItem( CategoryContentOne ) 
-				end
 			end
 
 local HelpDPanel = vgui.Create( "DLabel" )
@@ -422,6 +457,6 @@ function GetPosForSpawning()
 	if trace.HitPos:Distance(LocalPlayer():GetPos()) <= 2510 then
 		return tostring(trace.HitPos)
 	else
-		return LocalPlayer():GetPos()
+		return nil
 	end
 end
