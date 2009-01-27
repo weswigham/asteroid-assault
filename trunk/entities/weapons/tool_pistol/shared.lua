@@ -48,6 +48,7 @@ function SWEP:PrimaryAttack()
 	
 	if (!SERVER) then return end
 	
+	self.Owner:GiveMoney(math.floor(tr.Entity:Health()/2))
 	tr.Entity:Remove()
 
 end
