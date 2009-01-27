@@ -59,6 +59,7 @@ function GetAllPerksOfType(typez)
 end
 
 function HasAllPerks(ply)
+	if not ply.Perks then return false end
 	return (#ply.Perks == table.Count(Perks))
 end
 

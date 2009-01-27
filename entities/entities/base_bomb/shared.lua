@@ -1,0 +1,7 @@
+ENT.Type 			= "anim"
+ENT.Base 			= "base_anim"
+ENT.PrintName		= "base_bomb"
+ENT.Author			= "Levybreak"
+ENT.Contact 		= "Facepunch"
+ENT.Purpose			= "Boom. no, wait. This is a gravity bomb..."
+ENT.Instructions	= "Spawn. Use. Get stuck." 

@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$basetexture" "particles/blue_gas"
+	"$translucent" 1
+}

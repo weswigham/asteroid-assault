@@ -23,6 +23,8 @@ resource.AddFile("models/asteroids/asteroid2.mdl")
 resource.AddFile("materials/models/asteroids/asteroid_large.vmt")
 resource.AddFile("materials/models/asteroids/asteroid_large.vtf")
 resource.AddFile("materials/models/asteroids/asteroid_large_bump.vtf")
+resource.AddFile("materials/particles/blue_gas.vtf")
+resource.AddFile("materials/particles/blue_gas.vmt")
 resource.AddFile("materials/fire/tileable_fire.vmt")
 resource.AddFile("materials/fire/tileable_fire.vtf")
 resource.AddFile("materials/fire/tileable_fire_bump.vtf")
@@ -366,11 +368,11 @@ function GM:RespawnEveryone()
 end
 
 function GM:GiveMoney(ply,money)
-	ply:SetNWInt("money", ply:GetNWInt("money")+money)
+	ply:SetNWInt("money", ply:GetNWInt("money")+math.ceil(money))
 end
 
 function GM:TakeMoney(ply,money)
-	ply:SetNWInt("money", math.Clamp(ply:GetNWInt("money")-money,0,ply:GetNWInt("money")))
+	ply:SetNWInt("money", math.Clamp(ply:GetNWInt("money")-math.ceil(money),0,ply:GetNWInt("money")))
 end
 
 function BuySomething(ply,cmd,args)
@@ -381,6 +383,10 @@ function BuySomething(ply,cmd,args)
 			local nicename = Items[name].NiceName or Items[name].Name
 			if ply:GetNWInt("money") >= (Items[name].Cost*((100-ply:GetDiscount())/100)) then
 				if Items[name].Category == "weapon" then
+					if GAMEMODE.Build == true then 
+						ply:PrintMessage( HUD_PRINTTALK, "You can't buy a "..nicename.." during the build phase!" )
+						return nil
+					end
 					ply:SetNWInt("money", ply:GetNWInt("money") - (Items[name].Cost*((100-ply:GetDiscount())/100)))
 					ply:Give(Items[name].Class)
 					ply:GiveAmmo(Items[name].Ammo,Items[name].AmmoType)
@@ -401,6 +407,9 @@ function BuySomething(ply,cmd,args)
 					ent.owner = ply
 					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetVolume(),50,1000))
 					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
+						if GAMEMODE.Build != true then
+							ent:GetPhysicsObject():EnableMotion(false)
+						end
 					end
 				end
 			end

@@ -45,6 +45,7 @@ function ENT:OnRemove()
 end
 
 function ENT:Think()
+	if self.Frozen and self.Frozen == true then return end
 	if self:GetPhysicsObject():GetVelocity():Length() >= 700 then
 		self:GetPhysicsObject():SetVelocity(self:GetPhysicsObject():GetVelocity():Normalize()*700)
 	elseif self:GetPhysicsObject():GetVelocity():Length() <= 1 then

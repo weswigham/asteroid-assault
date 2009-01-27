@@ -64,7 +64,7 @@ function RetrieveAllItemsInCategory(cata)
 	return tbl
 end
 
-function AddPropToList(model,cost,name)
+function AddPropToList(model,cost,name,fov) --fov is optional
 	local ITEM = {}
 
 	ITEM.Name = string.gsub(name," ","-")
@@ -75,6 +75,7 @@ function AddPropToList(model,cost,name)
 	ITEM.Category = "prop"
 	ITEM.Subcategory = "junk"
 	ITEM.Model = model
+	ITEM.FOV = fov
 	RegisterItem(ITEM.Name,ITEM)
 end 
 
@@ -83,30 +84,46 @@ Test Items
 ---------------------------------------------------------*/
 local ITEM = {}
 
-ITEM.Name = "CenterOfGravity"
-ITEM.Desc = "Center Of Gravity"
-ITEM.Class = "center_of_gravity"
-ITEM.Cost = 0
+ITEM.Name = "SmallStasisBomb"--nospaces in name! Concommand nessessitates such!
+ITEM.NiceName = "Small Stasis Bomb"
+ITEM.Desc = "Stops asteroids within range."
+ITEM.Class = "base_bomb"
+ITEM.Cost = 500
 ITEM.Category = "bomb"
-ITEM.Subcategory = "gravity"
-ITEM.Warning = "This Item will be detonated IMMEDIATLY after spawning!"
+ITEM.Subcategory = "Stasis"
+ITEM.Warning = "Range = 1000; Press Use to activate!"
 ITEM.Model = "models/Roller.mdl"
-ITEM.KeyValues = {Test="Meh",
-				Test2="Un-Meh"}
+ITEM.KeyValues = {Type="1",
+				Strength="1000",
+				Time="10"}
 RegisterItem(ITEM.Name,ITEM)
 
-local ITEM = {}
-
-ITEM.Name = "COG"
-ITEM.Desc = "Center Of Gravity"
-ITEM.Class = "center_of_gravity"
-ITEM.Cost = 10
+ITEM.Name = "MedStasisBomb"--nospaces in name! Concommand nessessitates such!
+ITEM.NiceName = "Medium Stasis Bomb"
+ITEM.Desc = "Stops asteroids within range."
+ITEM.Class = "base_bomb"
+ITEM.Cost = 1500
 ITEM.Category = "bomb"
-ITEM.Subcategory = "explosive"
-ITEM.Warning = "This Item will be detonated IMMEDIATLY after spawning!"
+ITEM.Subcategory = "Stasis"
+ITEM.Warning = "Range = 1500; Will only be on for 15 seconds!"
 ITEM.Model = "models/Roller.mdl"
-ITEM.KeyValues = {Test="Meh",
-				Test2="Un-Meh"}
+ITEM.KeyValues = {Type="1",
+				Strength="1500",
+				Time="15"}
+RegisterItem(ITEM.Name,ITEM)
+
+ITEM.Name = "LarStasisBomb"--nospaces in name! Concommand nessessitates such!
+ITEM.NiceName = "Huge Stasis Bomb"
+ITEM.Desc = "Stops asteroids within range."
+ITEM.Class = "base_bomb"
+ITEM.Cost = 2500
+ITEM.Category = "bomb"
+ITEM.Subcategory = "Stasis"
+ITEM.Warning = "Range = 2500; Will only be on for 20 seconds!"
+ITEM.Model = "models/Roller.mdl"
+ITEM.KeyValues = {Type="1",
+				Strength="2500",
+				Time="20"}
 RegisterItem(ITEM.Name,ITEM)
 
 --
@@ -121,7 +138,7 @@ ITEM.Class = "weapon_smg1"
 ITEM.Cost = 50
 ITEM.Category = "weapon"
 ITEM.Subcategory = "SMGs"
-ITEM.Ammo = 50
+ITEM.Ammo = 100
 ITEM.AmmoType = "SMG1"
 ITEM.Model = "models/Weapons/w_smg1.mdl"
 RegisterItem(ITEM.Name,ITEM)
@@ -147,7 +164,7 @@ ITEM.Class = "weapon_shotgun"
 ITEM.Cost = 100
 ITEM.Category = "weapon"
 ITEM.Subcategory = "Other"
-ITEM.Ammo = 32
+ITEM.Ammo = 64
 ITEM.AmmoType = "Buckshot"
 ITEM.Model = "models/Weapons/w_shotgun.mdl"
 RegisterItem(ITEM.Name,ITEM)
@@ -175,17 +192,17 @@ AddPropToList("models/props_c17/FurnitureDresser001a.mdl",40,"Dresser")
 AddPropToList("models/props_c17/oildrum001.mdl",20,"Oil Drum")
 AddPropToList("models/props_c17/shelfunit01a.mdl",80,"Book Shelf")
 AddPropToList("models/props_combine/breendesk.mdl",130,"Ornate Desk")
-AddPropToList("models/props_combine/combine_window001.mdl",120,"Large Metal Window")
+AddPropToList("models/props_combine/combine_window001.mdl",120,"Large Metal Window",100)
 AddPropToList("models/props_combine/combine_barricade_short02a.mdl",30,"Small Barricade")
 AddPropToList("models/props_debris/metal_panel02a.mdl",10,"Sheet Metal")
 AddPropToList("models/props_doors/door03_slotted_left.mdl",50,"Metal Door")
 AddPropToList("models/props_interiors/VendingMachineSoda01a.mdl",110,"Soda Machine")
 AddPropToList("models/props_junk/iBeam01a_cluster01.mdl",90,"Metal Beams")
-AddPropToList("models/props_junk/TrashDumpster02.mdl",200,"Dumpster")
+AddPropToList("models/props_junk/TrashDumpster02.mdl",200,"Dumpster",100)
 AddPropToList("models/props_junk/TrashDumpster02b.mdl",40,"Dumpster Lid")
 AddPropToList("models/props_lab/blastdoor001b.mdl",50,"Small Blast Door")
 AddPropToList("models/props_lab/blastdoor001c.mdl",100,"Large Blast Door")
-AddPropToList("models/props_wasteland/cargo_container01.mdl",400,"Cargo Container")
+AddPropToList("models/props_wasteland/cargo_container01.mdl",400,"Cargo Container",110)
 AddPropToList("models/props_wasteland/controlroom_desk001b.mdl",70,"Metal Desk")
 AddPropToList("models/props_wasteland/interior_fence002d.mdl",150,"Large Chainlink Fence")
 AddPropToList("models/props_wasteland/kitchen_fridge001a.mdl",80,"Industrial Sized Fridge")
