@@ -20,9 +20,9 @@ end
 
 function GivePerk(ply,perk)
 	if PerkExists(perk) and not HasPerk(ply,perk) then
-		Perks[perk].Shared(ply)
 		if not ply.Perks then ply.Perks = {} end
 		table.insert(ply.Perks,perk)
+		Perks[perk].Shared(ply)
 		if (SERVER) then 
 			Perks[perk].Server(ply)
 			GivePerkClient(ply,perk)
@@ -126,7 +126,7 @@ PERK.Type = "physical"
 PERK.Shared = function(ply) --Run on server and client
 end 
 PERK.Server = function(ply) --Run on Server
-	if not HasPerk(ply,"Larger Speed Increase") and not HasPerk(ply,"Epic Speed Increase") then
+	if not HasPerk(ply,"Larger Speed Increase") and not HasPerk(ply,"Epic Speed Increase") and not HasPerk(ply,"Legendary Speed Increase") and not HasPerk(ply,"Godlike Speed Increase") then
 		GAMEMODE:SetPlayerSpeed( ply, 250, 500 )
 	end
 end 
@@ -138,12 +138,12 @@ local PERK = {}
 
 PERK.Name = "Larger Speed Increase"
 PERK.Desc = "+50 walking speed, +100 sprint speed - Not Culmative"
-PERK.Level = 2 --So that players who have done extra-good get to choose from the better perks.
+PERK.Level = 3 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "physical"
 PERK.Shared = function(ply) --Run on server and client
 end 
 PERK.Server = function(ply) --Run on Server
-	if not HasPerk(ply,"Epic Speed Increase") then
+	if not HasPerk(ply,"Epic Speed Increase") and not HasPerk(ply,"Legendary Speed Increase") and not HasPerk(ply,"Godlike Speed Increase") then
 		GAMEMODE:SetPlayerSpeed( ply, 270, 540 )
 	end
 end 
@@ -155,12 +155,46 @@ local PERK = {}
 
 PERK.Name = "Epic Speed Increase"
 PERK.Desc = "+80 walking speed, +160 sprint speed - Not Culmative"
-PERK.Level = 3 --So that players who have done extra-good get to choose from the better perks.
+PERK.Level = 5 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "physical"
 PERK.Shared = function(ply) --Run on server and client
 end 
 PERK.Server = function(ply) --Run on Server
-	GAMEMODE:SetPlayerSpeed( ply, 300, 600 )
+	if not HasPerk(ply,"Legendary Speed Increase") and not HasPerk(ply,"Godlike Speed Increase") then
+		GAMEMODE:SetPlayerSpeed( ply, 300, 600 )
+	end
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "Legendary Speed Increase"
+PERK.Desc = "+100 walking speed, +200 sprint speed - Not Culmative"
+PERK.Level = 7 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	if not HasPerk(ply,"Godlike Speed Increase") then
+		GAMEMODE:SetPlayerSpeed( ply, 320, 640 )
+	end
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "Godlike Speed Increase"
+PERK.Desc = "+120 walking speed, +240 sprint speed - Not Culmative"
+PERK.Level = 9 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	GAMEMODE:SetPlayerSpeed( ply, 340, 680 )
 end 
 PERK.Client = function(ply) --Run on Client
 end 
@@ -221,6 +255,117 @@ PERK.Client = function(ply) --Run on Client
 end 
 RegisterPerk(PERK.Name,PERK)
 
+local PERK = {}
+
+PERK.Name = "Legendary MaxHP Increase"
+PERK.Desc = "+75 MaxHP! -Stacking"
+PERK.Level = 6 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+	if not ply.MaxHP then ply.MaxHP = 100 end
+	ply.MaxHP = ply.MaxHP+75
+end 
+PERK.Server = function(ply) --Run on Server
+	
+end 
+PERK.Client = function(ply) --Run on Client
+
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "Godlike MaxHP Increase"
+PERK.Desc = "+100 MaxHP! -Stacking"
+PERK.Level = 10 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+	if not ply.MaxHP then ply.MaxHP = 100 end
+	ply.MaxHP = ply.MaxHP+100
+end 
+PERK.Server = function(ply) --Run on Server
+	
+end 
+PERK.Client = function(ply) --Run on Client
+
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "+1 HP Regeneration"
+PERK.Desc = "+1 HP Regeneration -Stacking"
+PERK.Level = 12 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+	if not ply.HPRegen then ply.HPRegen = 0 end
+	ply.HPRegen = ply.HPRegen+1
+	ply.HPRegenTime = true
+end 
+PERK.Server = function(ply) --Run on Server
+	hook.Add("Think",util.CRC(ply:SteamID()).."HPRegen",function() 
+		if ply:Alive() and ply.HPRegenTime == true then
+			ply.HPRegenTime = false
+			ply:SetHealth(math.Clamp(ply:Health()+(ply.HPRegen or 0),0,ply:GetMaxHealth()))
+			timer.Simple(2,function() ply.HPRegenTime = true end)
+		end
+	end)
+end 
+PERK.Client = function(ply) --Run on Client
+
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "+2 HP Regeneration"
+PERK.Desc = "+2 HP Regeneration -Stacking"
+PERK.Level = 14 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+	if not ply.HPRegen then ply.HPRegen = 0 end
+	ply.HPRegen = ply.HPRegen+2
+	ply.HPRegenTime = true
+end 
+PERK.Server = function(ply) --Run on Server
+	hook.Add("Think",util.CRC(ply:SteamID()).."HPRegen",function() 
+		if ply:Alive() and ply.HPRegenTime == true then
+			ply.HPRegenTime = false
+			ply:SetHealth(math.Clamp(ply:Health()+(ply.HPRegen or 0),0,ply:GetMaxHealth()))
+			timer.Simple(2,function() ply.HPRegenTime = true end)
+		end
+	end)
+end 
+PERK.Client = function(ply) --Run on Client
+
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "+3 HP Regeneration"
+PERK.Desc = "+3 HP Regeneration -Stacking"
+PERK.Level = 16 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "physical"
+PERK.Shared = function(ply) --Run on server and client
+	if not ply.HPRegen then ply.HPRegen = 0 end
+	ply.HPRegen = ply.HPRegen+3
+	ply.HPRegenTime = true
+end 
+PERK.Server = function(ply) --Run on Server
+	hook.Add("Think",util.CRC(ply:SteamID()).."HPRegen",function() 
+		if ply:Alive() and ply.HPRegenTime == true then
+			ply.HPRegenTime = false
+			ply:SetHealth(math.Clamp(ply:Health()+(ply.HPRegen or 0),0,ply:GetMaxHealth()))
+			timer.Simple(2,function() ply.HPRegenTime = true end)
+		end
+	end)
+end 
+PERK.Client = function(ply) --Run on Client
+
+end 
+RegisterPerk(PERK.Name,PERK)
+
 --[[--------------------------------------------------------
 	Weapon Perks
 ---------------------------------------------------------]]
@@ -230,7 +375,7 @@ local PERK = {}
 
 PERK.Name = "More Default SMG Ammo"
 PERK.Desc = "2 more clips primary, 1 more secondary."
-PERK.Level = 1 --So that players who have done extra-good get to choose from the better perks.
+PERK.Level = 2 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "Weapons"
 PERK.Shared = function(ply) --Run on server and client
 end 
@@ -243,3 +388,114 @@ end
 PERK.Client = function(ply) --Run on Client
 end 
 RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "More Stasis Bomb Time"
+PERK.Desc = "+5 Seconds."
+PERK.Level = 11 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Weapons"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	if not ply.StasisAdd then ply.StasisAdd = 0 end
+	ply.StasisAdd = ply.StasisAdd + 5
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+--[[--------------------------------------------------------
+	Money/EXP Perks
+---------------------------------------------------------]]
+
+--EXP
+local PERK = {}
+
+PERK.Name = "More EXP"
+PERK.Desc = "Double EXP Rate :O"
+PERK.Level = 12 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Money/EXP"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	if not ply.EXPMul then ply.EXPMul = 1 end
+	ply.EXPMul = ply.EXPMul + 1
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "EXP From Asteroids"
+PERK.Desc = "Get EXP when you kill asteroids!"
+PERK.Level = 6 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Money/EXP"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+
+--Money
+local PERK = {}
+
+PERK.Name = "More Money"
+PERK.Desc = "1.5x Money Rate :O"
+PERK.Level = 14 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Money/EXP"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	if not ply.MunyMul then ply.MunyMul = 1 end
+	ply.MunyMul = ply.MunyMul + 1.5
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "Cashback"
+PERK.Desc = "Get more money back when you remove a prop."
+PERK.Level = 4 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Money/EXP"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+--[[--------------------------------------------------------
+	Frills
+---------------------------------------------------------]]
+--[[
+local PERK = {}
+
+PERK.Name = "Stasis Gas"
+PERK.Desc = "You get the stasis gas effect. :D"
+PERK.Level = 15 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Frills"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	ply.EffectTime = 0
+	hook.Add("Think",util.CRC(ply:SteamID()).."Effect",function()
+		if ply:Alive() and ply.EffectTime >= 100 then
+			local efct = EffectData()
+			efct:SetEntity(ply)
+			util.Effect( "stasis_freeze", efct )
+		end
+		ply.EffectTime = ply.EffectTime + 1
+	end)
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)]]
+

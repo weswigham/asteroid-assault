@@ -21,11 +21,14 @@ function ENT:Initialize()
 	if not self.Time then self.Time = 10 end
 	if not self.Strength then self.Strength = 0 end
 	self.Active = false
-	if self.Type == 1 then
-		self:SetModel("models/Roller.mdl")
-		self:SetMoveType( MOVETYPE_VPHYSICS )
-		self:SetSolid( SOLID_VPHYSICS )
-		self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetModel("models/Roller.mdl")
+	self:SetMoveType( MOVETYPE_VPHYSICS )
+	self:SetSolid( SOLID_VPHYSICS )
+	self:PhysicsInit(SOLID_VPHYSICS)
+	if self.Type == 2 then
+		self:SetColor(10,255,0,255)
+	elseif self.Type == 3 then
+		self:SetColor(255,0,10,255)
 	end
 	self.NextSecond = true
 end
@@ -62,6 +65,50 @@ function ENT:Think()
 			local efct = EffectData()
 			efct:SetEntity(self)
 			util.Effect( "stasis_freeze", efct )
+		elseif self.Type == 2 then
+			for k,v in pairs(ents.FindByClass("asteroid")) do
+				if v:GetPos():Distance(self:GetPos()) <= self.Strength then
+					v.Freezer = self:EntIndex()
+					v.Frozen = true
+					local gforce = (GAMEMODE.GravityConstant*GAMEMODE.MassOfEarth*v:GetPhysicsObject():GetMass())/(v:GetPos():Distance(self:GetPos())^2)
+					local vect = (v:GetPos()-self:GetPos()):Normalize()
+					v:GetPhysicsObject():SetVelocity(vect*gforce)
+					v.DontUnfreezeMe = true
+					timer.Simple(2,function() v.DontUnfreezeMe = false; v.Freezer = nil; v.Frozen = false; end)
+					local efct = EffectData()
+					efct:SetEntity(v)
+					util.Effect( "repulsion_burst", efct )
+				elseif (not v.Freezer or v.Freezer == self:EntIndex()) and (not v.DontUnfreezeMe or v.DontUnfreezeMe == false) then
+					v.Freezer = nil
+					v.Frozen = false
+					v:GetPhysicsObject():EnableMotion(true)
+				end
+			end
+			local efct = EffectData()
+			efct:SetEntity(self)
+			util.Effect( "repulsion_burst", efct )
+		elseif self.Type == 3 then
+			for k,v in pairs(ents.FindByClass("asteroid")) do
+				if v:GetPos():Distance(self:GetPos()) <= self.Strength then
+					v.Freezer = self:EntIndex()
+					v.Frozen = true
+					local gforce = (GAMEMODE.GravityConstant*GAMEMODE.MassOfEarth*v:GetPhysicsObject():GetMass())/(v:GetPos():Distance(self:GetPos())^2)
+					local vect = (v:GetPos()-self:GetPos()):Normalize()
+					v:GetPhysicsObject():SetVelocity(vect*gforce*-1)
+					v.DontUnfreezeMe = true
+					timer.Simple(2,function() v.DontUnfreezeMe = false; v.Freezer = nil; v.Frozen = false; end)
+					local efct = EffectData()
+					efct:SetEntity(v)
+					util.Effect( "attraction_gas", efct )
+				elseif (not v.Freezer or v.Freezer == self:EntIndex()) and (not v.DontUnfreezeMe or v.DontUnfreezeMe == false) then
+					v.Freezer = nil
+					v.Frozen = false
+					v:GetPhysicsObject():EnableMotion(true)
+				end
+			end
+			local efct = EffectData()
+			efct:SetEntity(self)
+			util.Effect( "attraction_gas", efct )
 		end
 	elseif self.Active == false then
 		for k,v in pairs(ents.FindByClass("asteroid")) do

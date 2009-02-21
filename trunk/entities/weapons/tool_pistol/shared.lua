@@ -42,13 +42,15 @@ end
 function SWEP:PrimaryAttack()
 
 	local tr = self.Owner:GetEyeTrace()
-	if ( tr.HitWorld or (tr.Entity.owner and tr.Entity.owner:EntIndex() != self.Owner:EntIndex())) then return end
+	if ( tr.HitWorld or not tr.Entity.owner or (tr.Entity.owner and tr.Entity.owner:UniqueID() != self.Owner:UniqueID())) then return end
+	if tr.Entity:IsPlayer() then return end
 
 	self:ShootEffects( self )
 	
 	if (!SERVER) then return end
 	
-	self.Owner:GiveMoney(math.floor(tr.Entity:Health()/2))
+	self.Owner:GiveMoney(tr.Entity.ReturnValue or 1)
+	if HasPerk(self.Owner,"Cashback") == true then self.Owner:GiveMoney(math.floor(tr.Entity.ReturnValue/2)) end
 	tr.Entity:Remove()
 
 end
@@ -59,7 +61,8 @@ end
 function SWEP:SecondaryAttack()
 
 	local tr = self.Owner:GetEyeTrace()
-	if ( tr.HitWorld or (tr.Entity.owner and tr.Entity.owner:EntIndex() != self.Owner:EntIndex())) then return end
+	if ( tr.HitWorld or not tr.Entity.owner or (tr.Entity.owner and tr.Entity.owner:UniqueID() != self.Owner:UniqueID())) then return end
+	if tr.Entity:IsPlayer() then return end
 
 	self:ShootEffects( self )
 	
@@ -67,11 +70,13 @@ function SWEP:SecondaryAttack()
 	
 	if ( tr.Entity.CollisionGroup == COLLISION_GROUP_WORLD ) then
 	
-		tr.Entity:SetColor(255,255,255,255)
+		tr.Entity:SetColor(tr.Entity.OldColor["r"],tr.Entity.OldColor["g"],tr.Entity.OldColor["b"],tr.Entity.OldColor["a"])
 		tr.Entity:SetCollisionGroup( COLLISION_GROUP_NONE )
 		tr.Entity.CollisionGroup = COLLISION_GROUP_NONE
 	
 	else
+		tr.Entity.OldColor = {}
+		tr.Entity.OldColor["r"],tr.Entity.OldColor["g"],tr.Entity.OldColor["b"],tr.Entity.OldColor["a"] = tr.Entity:GetColor()
 		tr.Entity:SetColor(255,255,255,100)
 		tr.Entity:SetCollisionGroup( COLLISION_GROUP_WORLD )
 		tr.Entity.CollisionGroup = COLLISION_GROUP_WORLD

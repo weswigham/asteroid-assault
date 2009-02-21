@@ -14,7 +14,7 @@
 	if not self.Ent or not self.Ent:IsValid() then return end
 	self.emitter = ParticleEmitter( self.Ent:GetPos() )
 		
-	local particle = self.emitter:Add( "particles/blue_gas", self.Ent:GetPos()+Vector(0,0,20) )
+	local particle = self.emitter:Add( "particles/green_gas", self.Ent:GetPos()+Vector(0,0,20) )
 	if (particle) then
 		particle:SetVelocity( Vector(0,0,-1) * math.random(20, 30) )
 		particle:SetLifeTime( 1 )
@@ -25,7 +25,7 @@
 		particle:SetEndSize( 38 )
 		particle:SetRoll( math.Rand(0, 360) )
 		particle:SetRollDelta( math.Rand(-0.2, 0.2) )
-		particle:SetColor( 255 , 255 , 255 )
+		particle:SetColor( 10 , 255 , 0 )
 	end
 	self.emitter:Finish()
 
