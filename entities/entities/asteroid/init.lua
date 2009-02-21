@@ -16,11 +16,12 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	if self:GetModel() == nil then self:Remove() ErrorNoHalt("Model for asteroid was not set.") end
-	self:SetHealth(math.Clamp((self:GetPhysicsObject():GetVolume()/800)-100,50,1000)) --Default health
+	self:SetHealth(math.Clamp((self:GetPhysicsObject():GetVolume()/900)-100,50,1000)) --Default health
 	self:GetPhysicsObject():EnableGravity(false)
 	
 	self.DoesNotHaveTargetYet = true
 	self.FirstPush = true
+	self.Damagers = {}
 	
 	if GAMEMODE.MaxAsteroids:GetInt() <= 50 then --trail doubles entity count. :P
 		self.trail = util.SpriteTrail(self, 0, Color(255,50,50,200), true, 60, 10, 1.5, 1/(60+10)*0.5, "fire/tileable_fire.vmt") 
@@ -30,12 +31,13 @@ end
 
 function ENT:OnTakeDamage(dmg)
 	self:SetHealth(self:Health() - dmg:GetDamage())
+	if dmg:GetAttacker():IsPlayer() and not table.HasValue(self.Damagers, dmg:GetAttacker()) then table.insert(self.Damagers,dmg:GetAttacker()) end
 	if self:Health() < 1 then
-		local ply = dmg:GetAttacker()
-		if ply:IsPlayer() then
-			GAMEMODE:GiveMoney(ply,math.Clamp(math.floor(self:GetPhysicsObject():GetVolume()/500),10,1000))
-			self:EmitSound("Weapon_Mortar.Impact")
+		for k,v in pairs(self.Damagers) do
+			GAMEMODE:GiveMoney(v,math.floor(math.Clamp(math.ceil(math.floor(self:GetPhysicsObject():GetVolume()/500)/#self.Damagers)+20,10,1000)*(dmg:GetAttacker().MunyMul or 1)))
+			if HasPerk(v,"EXP From Asteroids") == true then v:SetNWInt("exp",v:GetNWInt("exp")+math.ceil(math.floor(self:GetPhysicsObject():GetVolume()/8000)/#self.Damagers)) end
 		end
+		self:EmitSound("Weapon_Mortar.Impact")
 		self:Remove()
 	end
 end
@@ -67,7 +69,7 @@ end
 
 function ENT:PhysicsCollide( data, physobj )
 	if (data.Speed > 100 && data.DeltaTime > 0.2 ) then
-		util.BlastDamage(self,self,data.HitPos,70,50)
+		util.BlastDamage(self,self,data.HitPos,100,100)
 		local eftdata = EffectData()
 		eftdata:SetStart(data.HitPos)
 		eftdata:SetOrigin(data.HitPos)

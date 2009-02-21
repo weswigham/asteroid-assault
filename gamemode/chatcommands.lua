@@ -83,11 +83,17 @@ CHATCMD.Command = "!give"
 CHATCMD.Desc = "- gives specified user (or group of users with common name portions) money"
 function CHATCMD:Run( ply, ... )
 	if ply:IsAdmin() then
+		local found = false
 		if tonumber(arg[2]) then
 			for k,v in pairs(player.GetAll()) do
-				if string.find(string.lower(v:GetName()),string.lower(arg[1])) != nil then
+				if arg[1] == "*" then
 					v:SetNWInt("money", v:GetNWInt("money")+tonumber(arg[2]))
-				else
+					found = true
+				elseif string.find(string.lower(v:GetName()),string.lower(arg[1])) != nil then
+					v:SetNWInt("money", v:GetNWInt("money")+tonumber(arg[2]))
+					found = true
+				end
+				if found != true then
 					ply:PrintMessage( HUD_PRINTTALK, "Player "..arg[1].." was not found." )
 				end
 			end
@@ -120,7 +126,7 @@ RegisterChatCmd(CHATCMD.Command,CHATCMD)
 local CHATCMD = {}
 
 CHATCMD.Command = "!perkme"
-CHATCMD.Desc = "- skips this phase"
+CHATCMD.Desc = "- adds perk"
 function CHATCMD:Run( ply, ... )
 	if ply:IsAdmin() then
 		local perk = table.concat(arg, " ")
@@ -135,10 +141,35 @@ RegisterChatCmd(CHATCMD.Command,CHATCMD)
 local CHATCMD = {}
 
 CHATCMD.Command = "!plusexp"
-CHATCMD.Desc = "- skips this phase"
+CHATCMD.Desc = "- adds exp"
 function CHATCMD:Run( ply, ... )
 	if ply:IsAdmin() then
 		ply:SetNWInt("exp", ply:GetNWInt("exp")+arg[1])
 	end
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+Stuck
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!stuck"
+CHATCMD.Desc = "- frees you"
+function CHATCMD:Run( ply, ... )
+	ply:SetPos(ply:GetPos()+Vector(0,0,10))
+end
+RegisterChatCmd(CHATCMD.Command,CHATCMD)
+
+/*---------------------------------------------------------
+Save
+---------------------------------------------------------*/
+local CHATCMD = {}
+
+CHATCMD.Command = "!save"
+CHATCMD.Desc = "- saves you"
+function CHATCMD:Run( ply, ... )
+	GAMEMODE:Save(ply)
+	ply:PrintMessage( HUD_PRINTTALK, "Your experience has been saved.")
 end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)

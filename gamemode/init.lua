@@ -5,8 +5,10 @@ By Levybreak
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
-AddCSLuaFile( "perks.lua" )
 AddCSLuaFile( "player_extensions.lua" )
+AddCSLuaFile( "perks.lua" )
+AddCSLuaFile( "cl_scoreboard.lua" )
+
 
 include( 'shared.lua' )
 include( 'chatcommands.lua' )
@@ -25,6 +27,10 @@ resource.AddFile("materials/models/asteroids/asteroid_large.vtf")
 resource.AddFile("materials/models/asteroids/asteroid_large_bump.vtf")
 resource.AddFile("materials/particles/blue_gas.vtf")
 resource.AddFile("materials/particles/blue_gas.vmt")
+resource.AddFile("materials/particles/green_gas.vtf")
+resource.AddFile("materials/particles/green_gas.vmt")
+resource.AddFile("materials/particles/red_gas.vtf")
+resource.AddFile("materials/particles/red_gas.vmt")
 resource.AddFile("materials/fire/tileable_fire.vmt")
 resource.AddFile("materials/fire/tileable_fire.vtf")
 resource.AddFile("materials/fire/tileable_fire_bump.vtf")
@@ -62,7 +68,7 @@ end
 
 function GM:PhysgunPickup(ply, ent)
 	if ent:GetClass() == "func_breakable" then return false end
-	if ent.owner and ent.owner:EntIndex() != ply:EntIndex() then return false end
+	if not ent.owner or ent.owner:UniqueID() != ply:UniqueID() then return false end
 	return true
 end
 
@@ -125,7 +131,31 @@ function GM:PlayerShouldTakeDamage( ply, attacker )
 end
 
 function GM:ShowHelp( ply )
-	ply:ConCommand( "OpenBuyWindow" )
+	--ply:ConCommand( "OpenBuyWindow", "Help" )
+	umsg.Start("OpenBuyMenuFromServer",ply)
+		umsg.String("Help")
+	umsg.End()
+end
+
+function GM:ShowTeam(ply)
+	--ply:ConCommand( "OpenBuyWindow", "Bombs")
+	umsg.Start("OpenBuyMenuFromServer",ply)
+		umsg.String("Bombs")
+	umsg.End()
+end
+
+function GM:ShowSpare1(ply)
+	--ply:ConCommand( "OpenBuyWindow", "Turrets")
+	umsg.Start("OpenBuyMenuFromServer",ply)
+		umsg.String("Turrets")
+	umsg.End()
+end
+
+function GM:ShowSpare2(ply)
+	--ply:ConCommand( "OpenBuyWindow", "Weapons")
+	umsg.Start("OpenBuyMenuFromServer",ply)
+		umsg.String("Weapons")
+	umsg.End()
 end
 
 function GM:PlayerInitialSpawn( ply )
@@ -143,8 +173,10 @@ function GM:PlayerInitialSpawn( ply )
 	GAMEMODE:SetPlayerSpeed( ply, 220, 440 )
 	ply:SetMaxHealth(100)
 	
+end
+
+function GM:PlayerValid(ply) --Had to move load into this hook due to latency.
 	self:Load(ply)
-	
 end
 
 function GM:PlayerDisconnected( ply )
@@ -187,6 +219,7 @@ end
 function GimmieThisPerk(ply,cmd,args)
 	if args[1] and PerkExists(args[1]) and not HasPerk(ply,args[1]) and math.floor(ply:GetNWInt("exp")/600) >= Perks[args[1]].Level and #ply.Perks <= math.floor(ply:GetNWInt("exp")/600) then
 		GivePerk(ply,args[1])
+		GAMEMODE:Save(ply)
 	end
 end
 concommand.Add("IdLikeToBuyAVowelIMeanPerk",GimmieThisPerk)
@@ -251,7 +284,7 @@ function GM:PlayerThink(ply)
 			timer.Simple(1, function() 
 				if ply and ply:IsValid() then 
 					ply.AliveCounter = ply.AliveCounter + 1
-					ply:SetNetworkedInt("exp", ply:GetNWInt("exp")+1)
+					ply:SetNetworkedInt("exp", ply:GetNWInt("exp")+(1*(ply.EXPMul or 1)))
 					if ply.TempGodmodeRemaining > 0 then ply.TempGodmodeRemaining = ply.TempGodmodeRemaining - 1 end
 					if ply.TempGodmodeRemaining <= 0 then ply.TempGodmode = false end
 					ply.NextSecond = true 
@@ -263,7 +296,7 @@ function GM:PlayerThink(ply)
 			ply:SetFrags(ply.AliveCounter)
 		end
 		
-		if math.fmod(ply.AliveCounter,60) == 0 and ply.NextSecond == true then --save for every minute you're alive
+		if math.fmod(CurTime(),120) <= 0 and ply.NextSecond == true then --save every so often :V
 			self:Save(ply)
 			ply:PrintMessage( HUD_PRINTTALK, "Your experience has been saved.")
 		end
@@ -273,6 +306,7 @@ function GM:PlayerThink(ply)
 	if ply:GetNWInt("exp")/600 > ply.NextLevel then
 		umsg.Start("ChoseNewPerk",ply)
 		umsg.End()
+		self:Save(ply)
 		ply.NextLevel = ply.NextLevel + 1
 	end
 end
@@ -333,12 +367,12 @@ function GM:StartBuild()
 	for k,v in pairs(ents.FindByClass("asteroid")) do
 		v:Remove()
 	end
-	
-	for k,v in pairs(ents.FindByClass("prop_physics")) do
-		v:SetUnFreezable(true)
-	end
+
 	RunConsoleCommand("stopsounds")
 	
+	for k,v in pairs(player.GetAll()) do
+		self:Save(v)
+	end
 end
 
 function GM:StartArmeggadon()
@@ -352,10 +386,16 @@ function GM:StartArmeggadon()
 	for k,v in pairs(ents.FindByClass("prop_physics")) do
 		v:SetCollisionGroup( COLLISION_GROUP_NONE )
 		v.CollisionGroup = COLLISION_GROUP_NONE
-		v:SetUnFreezable(false)
+		if v:GetPhysicsObject() and v:GetPhysicsObject():IsValid() then
 		v:GetPhysicsObject():EnableMotion(false)
+		end
 		v:SetColor(255,255,255,255)
 	end
+	
+	for k,v in pairs(player.GetAll()) do
+		self:Save(v)
+	end
+	
 end
 
 function GM:RespawnEveryone()
@@ -376,7 +416,7 @@ function GM:TakeMoney(ply,money)
 end
 
 function BuySomething(ply,cmd,args)
-	if ply and ply:IsValid() then
+	if ply and ply:IsValid() and ply:Alive() then
 		local args = string.Explode(" ",args[1])
 		local name = args[1]
 		if ItemExists(name) then
@@ -400,12 +440,14 @@ function BuySomething(ply,cmd,args)
 					ent:SetModel(Items[name].Model)
 					if Items[name].KeyValues then
 						for k,v in pairs(Items[name].KeyValues) do
+							if k == "Time" and string.find(string.lower(name),"stasis") then v = v + (ply.StasisAdd or 0) end
 							ent:SetKeyValue(tostring(k),tostring(v))
 						end
 					end
 					ent:Spawn()
 					ent.owner = ply
-					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetVolume(),50,1000))
+					ent.ReturnValue = math.floor(Items[name].Cost/2.5)
+					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetVolume() or 50,50,1000))
 					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
 						if GAMEMODE.Build != true then
 							ent:GetPhysicsObject():EnableMotion(false)

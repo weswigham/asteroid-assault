@@ -4,8 +4,10 @@ By Levybreak
 ---------------------------------------------------------*/
 
 include( 'shared.lua' )
-include( 'perks.lua' )
 include( 'player_extensions.lua' )
+include( 'perks.lua' )
+include( 'cl_scoreboard.lua' )
+
 
 function GM:Initialize()
 
@@ -108,13 +110,26 @@ end
 --------------
 --Perk Stuff--
 --------------
+local PerksToGive = {}
 
 local function RecievePerkz(um) --Hurhur. local to prevent abuse by smart playaz
 	local perk = um:ReadString()
-	GivePerk(LocalPlayer(),perk)
-	LocalPlayer():PrintMessage( HUD_PRINTTALK,"You have recieved the perk "..perk.."!")
+	if LocalPlayer():IsValid() then
+		GivePerk(LocalPlayer(),perk)
+		LocalPlayer():PrintMessage( HUD_PRINTTALK,"You have recieved the perk "..(perk or "bugged usermessage").."!")
+	else
+		table.insert(PerksToGive,perk)
+	end
 end
 usermessage.Hook("RecievePerks",RecievePerkz)
+
+function GM:PlayerValid(ply)
+	if PerksToGive and PerksToGive != {} then
+		for k,perk in pairs(PerksToGive) do
+			GivePerk(LocalPlayer(),perk)
+		end
+	end
+end
 
 local function MakeGetNewPerkWindow(um) 
 	local DermaPanel = vgui.Create( "DFrame" )
@@ -183,7 +198,7 @@ usermessage.Hook("ChoseNewPerk",MakeGetNewPerkWindow)
 --End Perk Stuff--
 ------------------
 
-function BuyItemsMenu(activetab) --Automatically adds new subcategories now. :D
+function BuyItemsMenu(ply, cmd, activetab) --Automatically adds new subcategories now. :D
 
 local DermaPanel = vgui.Create( "DFrame" )
 DermaPanel:SetPos( (ScrW()/2)-185,(ScrH()/2)-200 )
@@ -238,7 +253,7 @@ PropertySheet:SetSize(360, 365)
 						if pos == nil then
 							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
 						else
-							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+							RunConsoleCommand("BuySomeShit", v.Name.." "..(pos or " "))
 						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
@@ -247,7 +262,7 @@ PropertySheet:SetSize(360, 365)
 				
 				local Decr = vgui.Create( "DLabel", DPanelz)
 				Decr:SetPos(80,4)
-				Decr:SetText(v.NiceName or v.Name..": "..v.Desc.."\nCost: "..v.Cost.."\nWarnings: "..(v.Warning or "none"))
+				Decr:SetText((v.NiceName or v.Name)..": "..v.Desc.."\nCost: "..v.Cost.."\nWarnings: "..(v.Warning or "none"))
 				Decr:SetSize(250,67)
 		
 				CategoryList:AddItem( DPanelz ) 
@@ -292,7 +307,7 @@ PropertySheet:SetSize(360, 365)
 						if pos == nil then
 							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
 						else
-							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+							RunConsoleCommand("BuySomeShit", v.Name.." "..(pos or " "))
 						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
@@ -301,7 +316,7 @@ PropertySheet:SetSize(360, 365)
 				
 				local Decr = vgui.Create( "DLabel", DPanelz)
 				Decr:SetPos(80,4)
-				Decr:SetText(v.NiceName or v.Name..": "..v.Desc.."\nCost: "..v.Cost.."\nWarnings: "..(v.Warning or "none"))
+				Decr:SetText((v.NiceName or v.Name)..": "..v.Desc.."\nCost: "..v.Cost.."\nWarnings: "..(v.Warning or "none"))
 				Decr:SetSize(250,67)
 		
 				CategoryList:AddItem( DPanelz ) 
@@ -343,7 +358,7 @@ PropertySheet:SetSize(360, 365)
     			CategoryContentOne.DoClick = function()
 					if LocalPlayer():GetNWInt("money") >= (v.Cost*((100-LocalPlayer():GetDiscount())/100)) then
 						local pos = GetPosForSpawning()
-						RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+						RunConsoleCommand("BuySomeShit", v.Name.." "..(pos or " "))
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
 					end
@@ -351,7 +366,7 @@ PropertySheet:SetSize(360, 365)
 				
 				local Decr = vgui.Create( "DLabel", DPanelz)
 				Decr:SetPos(80,4)
-				Decr:SetText(v.NiceName or v.Name..": "..v.Desc.."\nCost: "..v.Cost.."\nWarnings: "..(v.Warning or "none"))
+				Decr:SetText((v.NiceName or v.Name)..": "..v.Desc.."\nCost: "..v.Cost.."\nWarnings: "..(v.Warning or "none"))
 				Decr:SetSize(250,67)
 		
 				CategoryList:AddItem( DPanelz ) 
@@ -394,7 +409,7 @@ PropertySheet:SetSize(360, 365)
 						if pos == nil then
 							LocalPlayer():PrintMessage( HUD_PRINTTALK, "That position is too far away to spawn something at." )
 						else
-							RunConsoleCommand("BuySomeShit", v.Name.." "..pos)
+							RunConsoleCommand("BuySomeShit", v.Name.." "..(pos or " "))
 						end
 					else
 						LocalPlayer():PrintMessage( HUD_PRINTTALK, "You don't have enough money for that "..v.Name.." you need $"..v.Cost-LocalPlayer():GetNWInt("money").." more!" )
@@ -467,16 +482,21 @@ end
 concommand.Add("OpenBuyWindow", BuyItemsMenu)
 
 function OpenTheBuyWindowFromSpawnKey()
-	BuyItemsMenu("Props")
+	BuyItemsMenu(nil,nil,"Props")
 end 
 
 function OpenTheBuyWindowFromContextKey()
 	if GetGlobalInt("buildmode") > 0 then
-		BuyItemsMenu("Props")
+		BuyItemsMenu(nil,nil,"Props")
 	else
-		BuyItemsMenu("Weapons")
+		BuyItemsMenu(nil,nil,"Weapons")
 	end
 end 
+
+function OpenBuyMenuFromServer(um)
+	BuyItemsMenu(nil,nil,um:ReadString())
+end
+usermessage.Hook("OpenBuyMenuFromServer",OpenBuyMenuFromServer)
 
 hook.Add("OnSpawnMenuOpen","UponOpeningTehMenuz",OpenTheBuyWindowFromSpawnKey)
 hook.Add("OnContextMenuOpen","UponOpeningTehContextMenuz",OpenTheBuyWindowFromContextKey)
