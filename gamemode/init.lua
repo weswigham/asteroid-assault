@@ -12,7 +12,6 @@ AddCSLuaFile( "cl_scoreboard.lua" )
 
 include( 'shared.lua' )
 include( 'chatcommands.lua' )
-include( 'sg_compatability.lua' )
 include( 'player_extensions.lua' )
 include( 'perks.lua' )
 
@@ -230,12 +229,12 @@ function GM:Think()
 		NextSecond = false
 	end
 	
-	local playersdead = false
+	local playersdead = true
 	self.LowestPlayerZ = nil
 	if player.GetAll() != nil then
 	for k,v in pairs(player.GetAll()) do
 		self:PlayerThink(v)
-		if v:Alive() == false then playersdead = true end
+		if v:Alive() == true then playersdead = false end
 	end
 	end
 	if playersdead == true then --considering I have decided not to limit respawn times, this should not heppen often.
