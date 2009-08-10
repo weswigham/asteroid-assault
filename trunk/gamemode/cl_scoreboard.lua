@@ -15,7 +15,6 @@ function GM:ScoreboardHide()
 	GAMEMODE.ShowScoreboard = false
 end
 
-// TODO: CLEAN THIS CODE
 
 function GM:GetTeamScoreInfo()
 
@@ -38,6 +37,7 @@ function GM:GetTeamScoreInfo()
 			if pl:Alive() then
 				TeamInfo[_team].TeamName = "Player(s)"--team.GetName( _team )
 			else
+				_team = _team+1
 				TeamInfo[_team].TeamName = "Dead"
 				TeamInfo[_team].Color = Color(200,200,200,255)
 			end

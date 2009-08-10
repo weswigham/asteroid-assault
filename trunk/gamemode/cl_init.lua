@@ -13,8 +13,10 @@ function GM:Initialize()
 
 	self.BaseClass:Initialize()
 	surface.CreateFont("arvigo",30,700,true,false,"Avirgo30")
+	--util.Effect("laser_sight",EffectData())
 	
 end
+
 
 function PointOn2DBezierCurve(dis,pt1,pt2,pt3) --my poor attempt at a bezier curve algorthm. I think dis is distance along the curve, pt1 is start, pt2 is control, and pt3 is end.
 	local out1 = ((1-dis)^2)*pt1.x+2*(1-dis)*dis*pt2.x+(dis^2)*pt3.x
@@ -420,12 +422,14 @@ PropertySheet:SetSize(360, 365)
 
 local HelpDPanel = vgui.Create( "DLabel" )
 HelpDPanel:SetPos(5,5)
-HelpDPanel:SetText([[Real help will be coming soon! For now,
-All you need to know is that you need to stay alive.
-You can do that by blowing up the asteroids before they hit you.
-There is also a build phase between waves of aseroids.
-That is when you can buy props to build a small shelter if/when you
-need a break during the apocalypse.
+HelpDPanel:SetText([[Welcome to Asteroid Assault!
+Your goal is to survive as long as possible through earning
+money and perks! You earn money by shooting down asteroids!
+You earn perks by leveling up! You get a level every 600 experience
+and you gain 1 exerience for every 1 second you are alive!
+You can try and survive longer by building a base in build mode,
+and you can try and make more money by buying better weapons in
+battle mode!
 
 ~This has been an automated Aperture Science Help Message.]])
 HelpDPanel:SizeToContents()

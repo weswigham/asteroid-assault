@@ -5,7 +5,7 @@ include('shared.lua')
 
 
 local function physgunPickup( userid, Ent )  	
-	if Ent:GetClass() == "asteroid" then  		
+	if Ent:GetClass() == "asteroid" or Ent:IsPlayer() == true then  		
 		return false
 	end  
 end     

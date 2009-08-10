@@ -331,11 +331,11 @@ AddPropToList("models/props_debris/metal_panel02a.mdl",40,"Sheet Metal")
 AddPropToList("models/props_doors/door03_slotted_left.mdl",90,"Metal Door")
 AddPropToList("models/props_interiors/VendingMachineSoda01a.mdl",140,"Soda Machine")
 AddPropToList("models/props_junk/iBeam01a_cluster01.mdl",120,"Metal Beams")
-AddPropToList("models/props_junk/TrashDumpster02.mdl",230,"Dumpster",130)
+AddPropToList("models/props_junk/TrashDumpster02.mdl",230,"Dumpster",170)
 AddPropToList("models/props_junk/TrashDumpster02b.mdl",70,"Dumpster Lid")
 AddPropToList("models/props_lab/blastdoor001b.mdl",80,"Small Blast Door")
 AddPropToList("models/props_lab/blastdoor001c.mdl",130,"Large Blast Door")
-AddPropToList("models/props_wasteland/cargo_container01.mdl",5000,"Cargo Container",150) --Mmmm... I need to jack the price up on these, they're simply too powerful.
+AddPropToList("models/props_wasteland/cargo_container01.mdl",5000,"Cargo Container",250) --Mmmm... I need to jack the price up on these, they're simply too powerful.
 AddPropToList("models/props_wasteland/controlroom_desk001b.mdl",100,"Metal Desk")
 AddPropToList("models/props_wasteland/interior_fence002d.mdl",180,"Large Chainlink Fence")
 AddPropToList("models/props_wasteland/kitchen_fridge001a.mdl",110,"Industrial Sized Fridge")
