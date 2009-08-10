@@ -405,6 +405,73 @@ PERK.Client = function(ply) --Run on Client
 end 
 RegisterPerk(PERK.Name,PERK)
 
+--AR2
+local PERK = {}
+
+PERK.Name = "Spawn With AR2"
+PERK.Desc = "You spawn with the AR2"
+PERK.Level = 15 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Weapons"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	ply.AR2Loadout = true
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+
+--Shotgun
+local PERK = {}
+
+PERK.Name = "Spawn With Shotgun"
+PERK.Desc = "You spawn with the Shotgun"
+PERK.Level = 15 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Weapons"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	ply.ShotgunLoadout = true
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+--RPG
+local PERK = {}
+
+PERK.Name = "Spawn With RPG"
+PERK.Desc = "You spawn with the RPG"
+PERK.Level = 15 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Weapons"
+PERK.Shared = function(ply) --Run on server and client
+end 
+PERK.Server = function(ply) --Run on Server
+	ply.RPGLoadout = true
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+--Aim Aid
+--[[
+local PERK = {}
+
+PERK.Name = "Laser Sight" --I think I can do this purely on the client...
+PERK.Desc = "A laser sight is attached to each weapon"
+PERK.Level = 7 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "Weapons"
+PERK.Shared = function(ply) --Run on server and client
+	ply.LaserSights = true
+end 
+PERK.Server = function(ply) --Run on Server
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)]]
+
+
 --[[--------------------------------------------------------
 	Money/EXP Perks
 ---------------------------------------------------------]]

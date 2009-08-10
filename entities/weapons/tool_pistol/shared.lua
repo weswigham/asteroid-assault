@@ -50,7 +50,7 @@ function SWEP:PrimaryAttack()
 	if (!SERVER) then return end
 	
 	self.Owner:GiveMoney(tr.Entity.ReturnValue or 1)
-	if HasPerk(self.Owner,"Cashback") == true then self.Owner:GiveMoney(math.floor(tr.Entity.ReturnValue/2)) end
+	if HasPerk(self.Owner,"Cashback") == true then self.Owner:GiveMoney(math.floor(tr.Entity.ReturnValue/3)) end
 	tr.Entity:Remove()
 
 end

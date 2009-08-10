@@ -35,6 +35,8 @@ resource.AddFile("materials/fire/tileable_fire.vtf")
 resource.AddFile("materials/fire/tileable_fire_bump.vtf")
 resource.AddFile("materials/fire/tileable_fire_selfillum.vtf")
 
+GM.MaxProps = 100 --Sufficiently high that most people won't notice it.
+
 function GM:Initialize()
 	self.GravityConstant = (6.67428 + math.random(-0.00067,0.00067)) * 10^-11
 	self.MassOfEarth = (3.9742 * (10^18)) --Not really. Too lazy to change name.
@@ -46,6 +48,15 @@ function GM:Initialize()
 			self:AddCustomVolume(util.CRC(tostring(v:GetPos())), v:GetPos(), kvs.case02)
 		end
 	end
+	
+end
+
+function GM:InitPostEntity()
+	for k,v in pairs(ents.FindByClass("prop_physics")) do
+		if not v.owner then v.owner = GetWorldEntity() end
+	end
+	
+	GetWorldEntity().UniqueID = function() return "World" end -- cheap, quick, hacky fix.
 end
 
 function GM:DoPlayerDeath( ply, attacker, dmginfo )
@@ -99,6 +110,23 @@ function GM:EntityTakeDamage( ent, inflictor, attacker, dmgi )
 	end
 end
 
+function GM:SetupVote(name,duration,percent,OnPass,OnFail)
+	self.ActiveVoting = true
+	self.CurrentVote = {}
+	self.CurrentVote.Name = name
+	self.CurrentVote.Yes = 0
+	self.CurrentVote.No = 0
+	PrintMessage( HUD_PRINTTALK, "A Vote For "..name.." has commenced! You have "..duration.." seconds to vote. Just say yes or no! "..(percent*100).."% is required to pass it.")
+	timer.Simple(duration,function() 
+		self.ActiveVoting = nil
+		if self.CurrentVote.Yes/#player.GetAll() >= percent then OnPass() else OnFail() end 
+		for k,v in pairs(player.GetAll()) do
+			v.HasVoted = nil
+		end
+		self.CurrentVote = nil
+	end)
+end
+
 function GM:PlayerLoadout( pl )
 
 	pl:RemoveAllAmmo()
@@ -110,6 +138,18 @@ function GM:PlayerLoadout( pl )
 		pl:Give( "weapon_smg1" )
 		pl:GiveAmmo(280+(pl.PrimaryAmmoAdd*45),"SMG1")
 		pl:GiveAmmo(3+(pl.SecondaryAmmoAdd),"SMG1_Grenade")
+		if pl.AR2Loadout then
+			pl:Give("weapon_ar2")
+			pl:GiveAmmo(30,"AR2")
+		end
+		if pl.RPGLoadout then
+			pl:Give("weapon_rpg")
+			pl:GiveAmmo(3,"RPG")
+		end
+		if pl.ShotgunLoadout then
+			pl:Give("weapon_shotgun")
+			pl:GiveAmmo(3,"Buckshot")
+		end
 	end
 
 	local cl_defaultweapon = pl:GetInfo( "cl_defaultweapon" )
@@ -168,6 +208,7 @@ function GM:PlayerInitialSpawn( ply )
 	ply.Perks = {}
 	ply:SetNetworkedInt("money", 1000)
 	ply:SetNetworkedInt("exp", ply.PreviousTotal)
+	ply.NumProps = 0
 	
 	GAMEMODE:SetPlayerSpeed( ply, 220, 440 )
 	ply:SetMaxHealth(100)
@@ -357,6 +398,10 @@ function GM:ArmeggadonThink()
 	end
 end
 
+function GM:QueCleanup()
+	self.GunnaCleanUpNow = true
+end
+
 function GM:StartBuild()
 	PrintMessage( HUD_PRINTTALK, "Buildmode has begun!")
 	self.Build = true
@@ -371,6 +416,20 @@ function GM:StartBuild()
 	
 	for k,v in pairs(player.GetAll()) do
 		self:Save(v)
+	end
+	
+	if self.GunnaCleanUpNow and self.GunnaCleanUpNow == true then
+		game.CleanUpMap()
+		self.GunnaCleanUpNow = nil
+	end
+	
+	self:CheckForOwnerlessProps()
+	
+end
+
+function GM:CheckForOwnerlessProps()
+	for k,v in pairs(ents.FindByClass("prop_physics")) do
+		if not v.owner or v.owner == NULL then v:Remove() end
 	end
 end
 
@@ -395,6 +454,8 @@ function GM:StartArmeggadon()
 		self:Save(v)
 	end
 	
+	self:CheckForOwnerlessProps()
+	
 end
 
 function GM:RespawnEveryone()
@@ -403,6 +464,14 @@ function GM:RespawnEveryone()
 		v.NoCountDeath = true
 		v:KillSilent()
 	end
+	end
+end
+
+function GM:NextMap()
+	if game.GetMap() == "aa_rundown" then
+		return "aa_field"
+	else
+		return "aa_rundown"
 	end
 end
 
@@ -431,26 +500,34 @@ function BuySomething(ply,cmd,args)
 					ply:GiveAmmo(Items[name].Ammo,Items[name].AmmoType)
 					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
 				else
-					local pos = Vector(args[2],args[3],args[4])
-					if pos and pos:Distance(ply:GetPos()) <= 2600 then
-					ply:SetNWInt("money", ply:GetNWInt("money") - (Items[name].Cost*((100-ply:GetDiscount())/100)))
-					local ent = ents.Create(Items[name].Class)
-					ent:SetPos(pos+Vector(0,0,20))
-					ent:SetModel(Items[name].Model)
-					if Items[name].KeyValues then
-						for k,v in pairs(Items[name].KeyValues) do
-							if k == "Time" and string.find(string.lower(name),"stasis") then v = v + (ply.StasisAdd or 0) end
-							ent:SetKeyValue(tostring(k),tostring(v))
+					if ply.NumProps < GAMEMODE.MaxProps then
+						local pos = Vector(args[2],args[3],args[4])
+						
+						if pos and pos:Distance(ply:GetPos()) <= 2600 then
+							ply:SetNWInt("money", ply:GetNWInt("money") - (Items[name].Cost*((100-ply:GetDiscount())/100)))
+							local ent = ents.Create(Items[name].Class)
+							ent:SetPos(pos+Vector(0,0,20))
+							ent:SetModel(Items[name].Model)
+							if Items[name].KeyValues then
+								for k,v in pairs(Items[name].KeyValues) do
+									if k == "Time" and string.find(string.lower(name),"stasis") then v = v + (ply.StasisAdd or 0) end
+									ent:SetKeyValue(tostring(k),tostring(v))
+								end
+							end
+							ent:Spawn()
+							ent.owner = ply
+							ent.ReturnValue = math.floor(Items[name].Cost/2.5)
+							ent:SetHealth(math.Clamp((ent:GetPhysicsObject():GetVolume()) or 50,50,1000)*(1.5*(1-(ply.NumProps/GAMEMODE.MaxProps))))
+							ply.NumProps = ply.NumProps + 1
+							ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
+							if GAMEMODE.Build != true then
+								ent:GetPhysicsObject():EnableMotion(false)
+							end
+							
 						end
-					end
-					ent:Spawn()
-					ent.owner = ply
-					ent.ReturnValue = math.floor(Items[name].Cost/2.5)
-					ent:SetHealth(math.Clamp(ent:GetPhysicsObject():GetVolume() or 50,50,1000))
-					ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
-						if GAMEMODE.Build != true then
-							ent:GetPhysicsObject():EnableMotion(false)
-						end
+						
+					else
+						ply:PrintMessage( HUD_PRINTTALK, "You've already reached the prop/item limit! It's "..GAMEMODE.MaxProps.." props and you have "..ply.NumProps.." props." )
 					end
 				end
 			end
@@ -458,7 +535,18 @@ function BuySomething(ply,cmd,args)
 	end
 end 
 concommand.Add("BuySomeShit", BuySomething)
+--[[
+function mySetupVis(ply)
+	AddOriginToPVS(Vector(0,0,0))
+end
+hook.Add("SetupPlayerVisibility", "mySetupVis", mySetupVis)]]
 
+local function MahEntitysBeenRemoved(ent)
+	if ent.owner and ent.owner:IsValid() and ent.owner:UniqueID() != "World" then
+		ent.owner.NumProps = ent.owner.NumProps - 1
+	end
+end
+hook.Add("EntityRemoved","AAEntityRemoved",MahEntitysBeenRemoved)
 
 --Spacebuild 3 volume code, edited to not need Environments/Certain SB3 functions. This code *could* now be made into a reusable module...buuuttt... I don't feel like it. (And i modified it for this gamemode) ;)
 local volumes = {}

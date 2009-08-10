@@ -17,6 +17,7 @@ end
 function Player:TakeMoney(money)
 	self:SetNWInt("money", math.Clamp(self:GetNWInt("money")-math.ceil(money),0,self:GetNWInt("money")))
 end 
+
 end 
 
 if (SERVER) then
