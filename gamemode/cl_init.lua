@@ -81,7 +81,7 @@ function GM:HUDPaint()
 	local dist = 0
 	
 	if GetGlobalInt("buildmode") > 0 then
-		dist = (500/(3*60))*(GetGlobalInt("buildmode")/60)
+		dist = (500/(self.BuildTime*60))*(GetGlobalInt("buildmode")/60)
 		local str = ""
 		local seconds = math.ceil(math.fmod(GetGlobalInt("buildmode")/60,60))
 		if seconds < 10 then
@@ -91,7 +91,7 @@ function GM:HUDPaint()
 		end
 		draw.WordBox( 10, (ScrW()/2)-(surface.GetTextSize(str)/2)-5, ScrH()-45, str,"Arvigo30", Color(0,0,0,150), Color(CurTime()/div+150,100,100,250))
 	elseif GetGlobalInt("armeggadon") > 0 then
-		dist = (500/(12*60))*(GetGlobalInt("armeggadon")/60)
+		dist = (500/(self.ATime*60))*(GetGlobalInt("armeggadon")/60)
 		local str = ""
 		local seconds = math.ceil(math.fmod(GetGlobalInt("armeggadon")/60,60))
 		if seconds < 10 then
