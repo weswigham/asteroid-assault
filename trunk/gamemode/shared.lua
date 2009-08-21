@@ -7,6 +7,8 @@ GM.Name 	= "Asteroid Assault"
 GM.Author 	= "Levybreak"
 GM.Email 	= "-snip-"
 GM.Website 	= "N/A"
+GM.BuildTime = 5
+GM.ATime = 10
 
 function PointOn3DBezierCurve(dis,pt1,pt2,pt3) --my poor attempt at a bezier curve algorthm. I think dis is distance along the curve, pt1 is start, pt2 is control, and pt3 is end.
 	local out1 = ((1-dis)^2)*pt1.x+2*(1-dis)*dis*pt2.x+(dis^2)*pt3.x

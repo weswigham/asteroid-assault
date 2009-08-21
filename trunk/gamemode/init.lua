@@ -42,13 +42,11 @@ resource.AddFile("materials/models/turrets/metal_floor1.vtf")
 resource.AddFile("materials/models/turrets/greenplating1.vmt")
 resource.AddFile("materials/models/turrets/greenplating1.vtf")]]
 resource.AddFile("sound/railgun/capacitor_overload.mp3")
+resource.AddFile("sound/weapons/iceaxe/iceaxe_swing1.wav")
 resource.AddFile("models/Weapons/v_wrenchs.mdl")
 resource.AddFile("models/Weapons/w_wrenchs.mdl")
 resource.AddFile("materials/models/Weapons/v_wrench/v_wrench.vtf")
-resource.AddFile("materials/models/Weapons/w_wrench/wrench_h4wk.vtf")
 resource.AddFile("materials/models/Weapons/v_wrench/v_wrench.vmt")
-resource.AddFile("materials/models/Weapons/v_wrench/wrench_h4wk.vmt")
-resource.AddFile("materials/models/Weapons/w_wrench/wrench_h4wk.vmt")
 
 
 GM.MaxProps = 100 --Sufficiently high that most people won't notice it.
@@ -400,14 +398,14 @@ function GM:CalledEverySecond()
 		SetGlobalInt("buildmode", GetGlobalInt("buildmode")-1)
 		self:BuildThink()
 		if GetGlobalInt("buildmode") <= 0 then
-			SetGlobalInt("armeggadon",60*60*12)
+			SetGlobalInt("armeggadon",60*60*self.ATime)
 			self:StartArmeggadon()
 		end
 	elseif GetGlobalInt("armeggadon") > 0 then
 		SetGlobalInt("armeggadon", GetGlobalInt("armeggadon")-1)
 		self:ArmeggadonThink()
 	else
-		SetGlobalInt("buildmode", 60*60*3)
+		SetGlobalInt("buildmode", 60*60*self.BuildTime)
 		self:StartBuild()
 	end
 	NextSecond = true
