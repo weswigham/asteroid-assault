@@ -13,7 +13,7 @@ function GM:Initialize()
 
 	self.BaseClass:Initialize()
 	surface.CreateFont("arvigo",30,700,true,false,"Avirgo30")
-	--util.Effect("laser_sight",EffectData())
+	util.Effect("laser_sight",EffectData())
 	
 end
 
@@ -105,6 +105,16 @@ function GM:HUDPaint()
 	local stufftodraw2 = TableOfPointsOnCurve(Color(255-math.Clamp(500/(dist/8)*1.5,0,255),255-math.Clamp((500/(dist/8)*1.5)+10,0,255),255,255),1,10,500,dist,{x=(ScrW()/2)-200,y=ScrH()+5},{x=(ScrW()/2),y=ScrH()-195},{x=(ScrW()/2)+200,y=ScrH()+5})
 	for k,v in pairs(stufftodraw2) do
 		draw.TexturedQuad(v)
+	end
+	
+	local r,g,b,a = LocalPlayer():GetColor()
+	if g ~= 255 then --He's Invuln
+		surface.SetFont("Arvigo30")
+		local wid,hei = surface.GetTextSize("Invulnerable!")
+		surface.SetTextColor( r,g,b,a )
+		surface.SetTextPos( (ScrW()/2)-(wid/2),ScrH()-200-hei ) 
+		surface.DrawText( "Invulnerable!" )
+		
 	end
 	
 end

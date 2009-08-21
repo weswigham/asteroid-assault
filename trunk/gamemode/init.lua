@@ -34,6 +34,22 @@ resource.AddFile("materials/fire/tileable_fire.vmt")
 resource.AddFile("materials/fire/tileable_fire.vtf")
 resource.AddFile("materials/fire/tileable_fire_bump.vtf")
 resource.AddFile("materials/fire/tileable_fire_selfillum.vtf")
+resource.AddFile("models/turret/large_mg.mdl")
+resource.AddFile("models/turret/large_pod.mdl")
+resource.AddFile("models/turret/large_base.mdl")
+--[[resource.AddFile("materials/models/turrets/metal_floor1.vmt") --Broken materials
+resource.AddFile("materials/models/turrets/metal_floor1.vtf")
+resource.AddFile("materials/models/turrets/greenplating1.vmt")
+resource.AddFile("materials/models/turrets/greenplating1.vtf")]]
+resource.AddFile("sound/railgun/capacitor_overload.mp3")
+resource.AddFile("models/Weapons/v_wrenchs.mdl")
+resource.AddFile("models/Weapons/w_wrenchs.mdl")
+resource.AddFile("materials/models/Weapons/v_wrench/v_wrench.vtf")
+resource.AddFile("materials/models/Weapons/w_wrench/wrench_h4wk.vtf")
+resource.AddFile("materials/models/Weapons/v_wrench/v_wrench.vmt")
+resource.AddFile("materials/models/Weapons/v_wrench/wrench_h4wk.vmt")
+resource.AddFile("materials/models/Weapons/w_wrench/wrench_h4wk.vmt")
+
 
 GM.MaxProps = 100 --Sufficiently high that most people won't notice it.
 
@@ -103,9 +119,20 @@ end
 
 function GM:EntityTakeDamage( ent, inflictor, attacker, dmgi )
 	if (not ent:IsPlayer() and not attacker:IsPlayer()) and not (ent:EntIndex() == 0 or ent:EntIndex() == 1) then
-		ent:SetHealth(ent:Health()-dmgi)
-		if ent:Health() <= 0 then
-			ent:Remove()
+		if not ent.LinkedTo then
+			ent:SetHealth(ent:Health()-dmgi)
+			if ent:Health() <= 0 then
+				ent:Remove()
+			end
+		else
+			if ent.LinkedTo:IsValid() then
+				ent.LinkedTo:SetHealth(ent.LinkedTo:Health()-dmgi)
+				if ent.LinkedTo:Health() <= 0 then
+					ent.LinkedTo:Remove()
+				end
+			else
+				ent:Remove()
+			end
 		end
 	end
 end
@@ -325,8 +352,8 @@ function GM:PlayerThink(ply)
 				if ply and ply:IsValid() then 
 					ply.AliveCounter = ply.AliveCounter + 1
 					ply:SetNetworkedInt("exp", ply:GetNWInt("exp")+(1*(ply.EXPMul or 1)))
-					if ply.TempGodmodeRemaining > 0 then ply.TempGodmodeRemaining = ply.TempGodmodeRemaining - 1 end
-					if ply.TempGodmodeRemaining <= 0 then ply.TempGodmode = false end
+					if ply.TempGodmodeRemaining > 0 then ply:SetColor(50,70,255,255) ply.TempGodmodeRemaining = ply.TempGodmodeRemaining - 1 end
+					if ply.TempGodmodeRemaining <= 0 then ply:SetColor(255,255,255,255) ply.TempGodmode = nil end
 					ply.NextSecond = true 
 				end 
 			end)
@@ -425,6 +452,10 @@ function GM:StartBuild()
 	
 	self:CheckForOwnerlessProps()
 	
+	for k,v in pairs(ents.FindByClass("base_turret")) do
+		v:ArmageddonEnd()
+	end
+	
 end
 
 function GM:CheckForOwnerlessProps()
@@ -455,6 +486,10 @@ function GM:StartArmeggadon()
 	end
 	
 	self:CheckForOwnerlessProps()
+	
+	for k,v in pairs(ents.FindByClass("base_turret")) do
+		v:ArmageddonBegin()
+	end
 	
 end
 
@@ -495,6 +530,20 @@ function BuySomething(ply,cmd,args)
 						ply:PrintMessage( HUD_PRINTTALK, "You can't buy a "..nicename.." during the build phase!" )
 						return nil
 					end
+					if Items[name].BuyCondition then
+						if table.HasValue(Items[name].BuyCondition,"NoMedkit") and ply:HasWeapon("weapon_medkits") then
+							ply:PrintMessage( HUD_PRINTTALK, "You can't buy a "..nicename.." since you already have a medkit." )
+							return nil
+						end
+						if table.HasValue(Items[name].BuyCondition,"NoWrench") and ply:HasWeapon("weapon_wrench") then
+							ply:PrintMessage( HUD_PRINTTALK, "You can't buy a "..nicename.." since you already have a wrench." )
+							return nil
+						end
+						if table.HasValue(Items[name].BuyCondition,"NoRailgun") and ply:HasWeapon("weapon_railgun") then
+							ply:PrintMessage( HUD_PRINTTALK, "You can't buy a "..nicename.." since you already have a railgun." )
+							return nil
+						end
+					end
 					ply:SetNWInt("money", ply:GetNWInt("money") - (Items[name].Cost*((100-ply:GetDiscount())/100)))
 					ply:Give(Items[name].Class)
 					ply:GiveAmmo(Items[name].Ammo,Items[name].AmmoType)
@@ -518,11 +567,13 @@ function BuySomething(ply,cmd,args)
 							ent.owner = ply
 							ent.ReturnValue = math.floor(Items[name].Cost/2.5)
 							ent:SetHealth(math.Clamp((ent:GetPhysicsObject():GetVolume()) or 50,50,1000)*(1.5*(1-(ply.NumProps/GAMEMODE.MaxProps))))
+							ent.MaxHP = ent:Health()
 							ply.NumProps = ply.NumProps + 1
 							ply:PrintMessage( HUD_PRINTTALK, "You sucessfully bought a "..nicename.." you now have $"..ply:GetNWInt("money") )
 							if GAMEMODE.Build != true then
 								ent:GetPhysicsObject():EnableMotion(false)
 							end
+							if ent.PostSpawn then ent:PostSpawn() end
 							
 						end
 						
@@ -535,14 +586,10 @@ function BuySomething(ply,cmd,args)
 	end
 end 
 concommand.Add("BuySomeShit", BuySomething)
---[[
-function mySetupVis(ply)
-	AddOriginToPVS(Vector(0,0,0))
-end
-hook.Add("SetupPlayerVisibility", "mySetupVis", mySetupVis)]]
+
 
 local function MahEntitysBeenRemoved(ent)
-	if ent.owner and ent.owner:IsValid() and ent.owner:UniqueID() != "World" then
+	if ent.owner and ent.owner:IsValid() and ent.owner.NumProps and ent.owner:UniqueID() != "World" then
 		ent.owner.NumProps = ent.owner.NumProps - 1
 	end
 end

@@ -80,7 +80,7 @@ function AddPropToList(model,cost,name,fov) --fov is optional
 end 
 
 /*---------------------------------------------------------
-Test Items
+"Bombs"
 ---------------------------------------------------------*/
 local ITEM = {}
 
@@ -315,6 +315,64 @@ ITEM.Model = "models/Weapons/w_pistol.mdl"
 ITEM.FOV = 20
 RegisterItem(ITEM.Name,ITEM)
 
+--Engineer
+
+local ITEM = {}
+
+ITEM.Name = "Wrench"
+ITEM.NiceName = "Wrench"
+ITEM.Desc = "Heals Props"
+ITEM.Class = "weapon_wrench"
+ITEM.Cost = 5000
+ITEM.Category = "weapon"
+ITEM.Subcategory = "Engineering"
+ITEM.Ammo = 0
+ITEM.AmmoType = "none"
+ITEM.Model = "models/Weapons/w_wrenchs.mdl"
+ITEM.FOV = 20
+ITEM.BuyCondition = {"NoMedkit","NoRailgun","NoWrench"}
+ITEM.Warning = [[You may only take weapons from 1 of the "Class" categories.]]
+RegisterItem(ITEM.Name,ITEM)
+
+--Medic
+
+local ITEM = {}
+
+ITEM.Name = "Medkit"
+ITEM.NiceName = "Medkit"
+ITEM.Desc = "Heals People"
+ITEM.Class = "weapon_medkits"
+ITEM.Cost = 5000
+ITEM.Category = "weapon"
+ITEM.Subcategory = "Medic"
+ITEM.Ammo = 0
+ITEM.AmmoType = "none"
+ITEM.Model = "models/Items/HealthKit.mdl"
+ITEM.FOV = 20
+ITEM.BuyCondition = {"NoWrench","NoRailgun","NoMedkit"}
+ITEM.Warning = [[You may only take weapons from 1 of the "Class" categories.]]
+RegisterItem(ITEM.Name,ITEM)
+
+--Soldier
+
+local ITEM = {}
+
+ITEM.Name = "Railgun"
+ITEM.Desc = "It's powerful."
+ITEM.Class = "weapon_railgun"
+ITEM.Cost = 5000
+ITEM.Category = "weapon"
+ITEM.Subcategory = "Soldier"
+ITEM.Ammo = 0
+ITEM.AmmoType = "none"
+ITEM.Model = "models/Weapons/w_rocket_launcher.mdl"
+ITEM.FOV = 20
+ITEM.BuyCondition = {"NoWrench","NoMedkit","NoRailgun"}
+ITEM.Warning = [[You may only take weapons from 1 of the "Class" categories.]]
+RegisterItem(ITEM.Name,ITEM)
+
+
+
 --
 --Props
 --
@@ -344,3 +402,24 @@ AddPropToList("models/props_wasteland/wood_fence01a.mdl",60,"Wooden Fence")
 AddPropToList("models/props_c17/Lockers001a.mdl",90,"Lockers")
 AddPropToList("models/props_c17/gravestone_coffinpiece002a.mdl",110,"Coffin Cover")
 AddPropToList("models/props_lab/servers.mdl",110,"Server Block") --For the lulz
+
+
+--[[-----------------------------------------------------
+Turrets
+--------------------------------------------------------]]
+--[[ --Not QUITE done yet...
+local ITEM = {}
+
+ITEM.Name = "LargeMGTurret"--nospaces in name! Concommand nessessitates such!
+ITEM.NiceName = "Large Machine Gun Turret"
+ITEM.Desc = "Shoot things damnit!"
+ITEM.Class = "base_turret"
+ITEM.Cost = 5000
+ITEM.Category = "turret"
+ITEM.Subcategory = "Machine Gun"
+ITEM.Warning = "Has 5000 health."
+ITEM.Model = "models/turret/large_pod.mdl"
+ITEM.KeyValues = {Type="1",
+				Size="2",
+				Health="5000"}
+RegisterItem(ITEM.Name,ITEM)]]
