@@ -70,8 +70,23 @@ end
 local PERK = {}
 
 PERK.Name = "Slight Discount"
-PERK.Desc = "5% Discount in shop. -Culmative"
+PERK.Desc = "1% Discount in shop. -Culmative"
 PERK.Level = 0 --So that players who have done extra-good get to choose from the better perks.
+PERK.Type = "shopping"
+PERK.Shared = function(ply) --Run on server and client
+	ply:SetDiscount(ply:GetDiscount()+1) -- A percent value
+end 
+PERK.Server = function(ply) --Run on Server
+end 
+PERK.Client = function(ply) --Run on Client
+end 
+RegisterPerk(PERK.Name,PERK)
+
+local PERK = {}
+
+PERK.Name = "Larger Discount"
+PERK.Desc = "5% Discount in shop. -Culmative"
+PERK.Level = 3 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "shopping"
 PERK.Shared = function(ply) --Run on server and client
 	ply:SetDiscount(ply:GetDiscount()+5) -- A percent value
@@ -84,27 +99,12 @@ RegisterPerk(PERK.Name,PERK)
 
 local PERK = {}
 
-PERK.Name = "Larger Discount"
-PERK.Desc = "15% Discount in shop. -Culmative"
-PERK.Level = 3 --So that players who have done extra-good get to choose from the better perks.
-PERK.Type = "shopping"
-PERK.Shared = function(ply) --Run on server and client
-	ply:SetDiscount(ply:GetDiscount()+15) -- A percent value
-end 
-PERK.Server = function(ply) --Run on Server
-end 
-PERK.Client = function(ply) --Run on Client
-end 
-RegisterPerk(PERK.Name,PERK)
-
-local PERK = {}
-
 PERK.Name = "Huge Discount"
-PERK.Desc = "25% Discount in shop. -Culmative"
+PERK.Desc = "10% Discount in shop. -Culmative"
 PERK.Level = 8 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "shopping"
 PERK.Shared = function(ply) --Run on server and client
-	ply:SetDiscount(ply:GetDiscount()+25) -- A percent value
+	ply:SetDiscount(ply:GetDiscount()+10) -- A percent value
 end 
 PERK.Server = function(ply) --Run on Server
 end 
@@ -455,7 +455,7 @@ end
 RegisterPerk(PERK.Name,PERK)
 
 --Aim Aid
---[[
+
 local PERK = {}
 
 PERK.Name = "Laser Sight" --I think I can do this purely on the client...
@@ -469,7 +469,7 @@ PERK.Server = function(ply) --Run on Server
 end 
 PERK.Client = function(ply) --Run on Client
 end 
-RegisterPerk(PERK.Name,PERK)]]
+RegisterPerk(PERK.Name,PERK)
 
 
 --[[--------------------------------------------------------
@@ -480,19 +480,20 @@ RegisterPerk(PERK.Name,PERK)]]
 local PERK = {}
 
 PERK.Name = "More EXP"
-PERK.Desc = "Double EXP Rate :O"
+PERK.Desc = "1.5x EXP Rate :O"
 PERK.Level = 12 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "Money/EXP"
 PERK.Shared = function(ply) --Run on server and client
 end 
 PERK.Server = function(ply) --Run on Server
 	if not ply.EXPMul then ply.EXPMul = 1 end
-	ply.EXPMul = ply.EXPMul + 1
+	ply.EXPMul = ply.EXPMul + 0.5
 end 
 PERK.Client = function(ply) --Run on Client
 end 
 RegisterPerk(PERK.Name,PERK)
 
+--[[ --This perk is no more! With the introduction of the railgun, you'd get a perk every secondary fire. :V
 local PERK = {}
 
 PERK.Name = "EXP From Asteroids"
@@ -505,21 +506,21 @@ PERK.Server = function(ply) --Run on Server
 end 
 PERK.Client = function(ply) --Run on Client
 end 
-RegisterPerk(PERK.Name,PERK)
+RegisterPerk(PERK.Name,PERK)]]
 
 
 --Money
 local PERK = {}
 
 PERK.Name = "More Money"
-PERK.Desc = "1.5x Money Rate :O"
+PERK.Desc = "1.25x Money Rate :O"
 PERK.Level = 14 --So that players who have done extra-good get to choose from the better perks.
 PERK.Type = "Money/EXP"
 PERK.Shared = function(ply) --Run on server and client
 end 
 PERK.Server = function(ply) --Run on Server
 	if not ply.MunyMul then ply.MunyMul = 1 end
-	ply.MunyMul = ply.MunyMul + 1.5
+	ply.MunyMul = ply.MunyMul + 1.25
 end 
 PERK.Client = function(ply) --Run on Client
 end 
@@ -565,4 +566,6 @@ end
 PERK.Client = function(ply) --Run on Client
 end 
 RegisterPerk(PERK.Name,PERK)]]
+
+
 

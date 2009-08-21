@@ -44,7 +44,7 @@ end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)
 
 /*---------------------------------------------------------
-  Help
+  bug
 ---------------------------------------------------------*/
 local CHATCMD = {}
 
@@ -53,7 +53,13 @@ CHATCMD.Desc = "- Submit a bug to the server"
 CHATCMD.Usage = "(description of bug)"
 function CHATCMD:Run( ply, ... )
 	if arg[1] then
-		
+		local text = table.concat(arg," ")
+		if not file.Exists("AABugs\\"..ply:Nick()..".txt") then
+			file.Write("AABugs\\"..ply:Nick()..".txt",text)
+		else
+			text = text.."\n\n-------------------------------------------------------------------------------\n\n"..file.Read("AABugs\\"..ply:Nick()..".txt")
+			file.Write("AABugs\\"..ply:Nick()..".txt",text)
+		end
 	end
 end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)

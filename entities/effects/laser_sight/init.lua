@@ -15,6 +15,7 @@
  ---------------------------------------------------------*/ 
  function EFFECT:Think( ) 
    
+    self:SetPos(LocalPlayer():GetPos())
  	return true
  	 
  end 
@@ -27,11 +28,11 @@
 function EFFECT:Render() 
 	if LocalPlayer():Alive() and LocalPlayer().LaserSights and GetGlobalInt("armeggadon") > 1 then
 		render.SetMaterial( Laser )
-		local wep = LocalPlayer():GetActiveWeapon()
-		if wep and wep:IsValid() then
+		local wep = LocalPlayer():GetViewModel()
+		if wep and wep:IsValid() and wep:LookupAttachment("muzzle") and wep:GetAttachment(wep:LookupAttachment("muzzle")) then
 			local pos = wep:GetAttachment(wep:LookupAttachment("muzzle")).Pos
-			local tr = util.QuickTrace(pos,LocalPlayer():GetAimVector()*26000,{wep,LocalPlayer()})
-			render.DrawBeam( pos, tr.HitPos, 55, 0, 0, Color( 255, 255, 255, 255 ) )
+			render.DrawBeam( pos, LocalPlayer():GetEyeTrace().HitPos, 2, 0, 12.5, Color( 255, 0, 0, 255 ) )
 		end
 	end
 end  
+
