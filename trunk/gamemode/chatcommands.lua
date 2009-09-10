@@ -94,7 +94,7 @@ CHATCMD.Command = "!giveme"
 CHATCMD.Desc = "- gives self money -Admin Only"
 function CHATCMD:Run( ply, ... )
 	if ply:IsAdmin() then
-		ply:SetNWInt("money", ply:GetNWInt("money")+tonumber(arg[1]))
+		ply:SetNWInt("money", ply:GetNWInt("money")+(tonumber(arg[1]) or 0))
 	end
 end
 RegisterChatCmd(CHATCMD.Command,CHATCMD)
@@ -119,10 +119,22 @@ function CHATCMD:Run( ply, ... )
 					v:SetNWInt("money", v:GetNWInt("money")+tonumber(arg[2]))
 					found = true
 				end
-				if found != true then
-					ply:PrintMessage( HUD_PRINTTALK, "Player "..arg[1].." was not found." )
+			end
+			if found != true then
+				ply:PrintMessage( HUD_PRINTTALK, "Player "..arg[1].." was not found." )
+			end
+		end
+	elseif tonumber(arg[2]) and ply:GetNWInt("money") <= tonumber(arg[2]) then
+		local found = false
+		for k,v in pairs(player.GetAll()) do
+			if string.find(string.lower(v:GetName()),string.lower(arg[1])) != nil then
+				v:SetNWInt("money", v:GetNWInt("money")+tonumber(arg[2]))
+				ply:SetNWInt("money", ply:GetNWInt("money")-tonumber(arg[2]))
+				found = true
 				end
 			end
+		if found != true then
+			ply:PrintMessage( HUD_PRINTTALK, "Player "..arg[1].." was not found." )
 		end
 	end
 end

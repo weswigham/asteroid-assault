@@ -54,7 +54,7 @@ function GM:HUDPaint()
 	local div = math.ceil(CurTime()/(255+150))
 	surface.SetFont("Arvigo30")
 	
-	draw.WordBox( 10, 20, 20, "Money: "..LocalPlayer():GetNWInt("money"),"Arvigo30", Color(0,0,0,150), Color(CurTime()/div+150,100,100,250))
+	draw.WordBox( 10, 20, 20, "Money: "..math.floor(LocalPlayer():GetNWInt("money")),"Arvigo30", Color(0,0,0,150), Color(CurTime()/div+150,100,100,250))
 	local text = "Experience: "..LocalPlayer():GetNWInt("exp")
 	draw.WordBox( 10, ScrW()-30-surface.GetTextSize(text), 20, text,"Arvigo30", Color(0,0,0,150), Color(80,80,200,250))
 	
