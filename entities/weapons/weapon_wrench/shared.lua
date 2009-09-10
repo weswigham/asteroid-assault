@@ -64,7 +64,7 @@ function SWEP:PrimaryAttack()
 	if (!SERVER) then return end
 
 	local tr = self.Owner:GetEyeTrace()
-	if ( tr.HitWorld or (tr.Entity.owner and tr.Entity.owner:EntIndex() != self.Owner:EntIndex()) or (tr.HitPos:Distance(self.Owner:GetShootPos()) > 150) or tr.Entity:IsPlayer()) then return end
+	if ( tr.HitWorld or (tr.HitPos:Distance(self.Owner:GetShootPos()) > 150) or tr.Entity:IsPlayer()) then return end
 
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
     self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
@@ -74,12 +74,12 @@ function SWEP:PrimaryAttack()
 	if not tr.Entity.LinkedTo then
 		if tr.Entity.MaxHP and tr.Entity:Health() < tr.Entity.MaxHP then
 			tr.Entity:SetHealth(math.Clamp(tr.Entity:Health()+math.floor(tr.Entity.MaxHP*0.20)+300,0,tr.Entity.MaxHP))
-			self.Owner:GiveMoney(450)
+			self.Owner:GiveMoney(45)
 		end
 	else
 		if tr.Entity.LinkedTo.MaxHP and tr.Entity.LinkedTo:Health() < tr.Entity.LinkedTo.MaxHP then
 			tr.Entity.LinkedTo:SetHealth(math.Clamp(tr.Entity.LinkedTo:Health()+math.floor(tr.Entity.LinkedTo.MaxHP*0.20)+300,0,tr.Entity.LinkedTo.MaxHP))
-			self.Owner:GiveMoney(450)
+			self.Owner:GiveMoney(45)
 		end
 	end
 	

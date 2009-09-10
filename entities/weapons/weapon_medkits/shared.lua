@@ -107,6 +107,7 @@ function SWEP:SecondaryAttack()
 	if tr.Entity:IsPlayer() then
 		tr.Entity.TempGodmode = true
 		tr.Entity.TempGodmodeRemaining = 15
+		ply:GiveMoney(1750)
 	end
 	
 	ply.TempGodmode = true

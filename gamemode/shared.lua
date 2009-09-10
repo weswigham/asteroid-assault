@@ -407,9 +407,9 @@ AddPropToList("models/props_lab/servers.mdl",110,"Server Block") --For the lulz
 
 
 --[[-----------------------------------------------------
-Turrets
+Turrets - STILL WIP
 --------------------------------------------------------]]
---[[ --Not QUITE done yet...
+--[[
 local ITEM = {}
 
 ITEM.Name = "LargeMGTurret"--nospaces in name! Concommand nessessitates such!
@@ -423,5 +423,6 @@ ITEM.Warning = "Has 5000 health."
 ITEM.Model = "models/turret/large_pod.mdl"
 ITEM.KeyValues = {Type="1",
 				Size="2",
-				Health="5000"}
-RegisterItem(ITEM.Name,ITEM)]]
+				Health="15000"}
+RegisterItem(ITEM.Name,ITEM)
+]]

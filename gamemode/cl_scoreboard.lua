@@ -38,8 +38,10 @@ function GM:GetTeamScoreInfo()
 				TeamInfo[_team].TeamName = "Player(s)"--team.GetName( _team )
 			else
 				_team = _team+1
+				TeamInfo[_team] = {}
 				TeamInfo[_team].TeamName = "Dead"
 				TeamInfo[_team].Color = Color(200,200,200,255)
+				TeamInfo[_team].Players = {}
 			end
 			TeamInfo[_team].Players = {}
 		end		

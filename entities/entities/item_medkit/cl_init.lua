@@ -2,5 +2,5 @@
 include('shared.lua')
 
 function ENT:OnRemove()
-	LocalPlayer().MedkitCount = LocalPlayer().MedkitCount - 1
+	if LocalPlayer().MedkitCount then LocalPlayer().MedkitCount = LocalPlayer().MedkitCount - 1 end
 end 

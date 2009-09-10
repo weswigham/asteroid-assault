@@ -719,3 +719,18 @@ function GM:AddCustomVolume(name, pos, radius)
 	volumes[name].pos = pos
 	volumes[name].radius = radius
 end
+
+
+--Redistributable datastream fix.
+if (SERVER) then
+	local META = FindMetaTable("CRecipientFilter")
+	if META then
+		function META:IsValid()
+			return true
+		end
+	else
+		ErrorNoHalt(os.date().." Failed to fix datastream fuckup: \"CRecipientFilter\"'s metatable invalid.")
+	end
+end
+
+
